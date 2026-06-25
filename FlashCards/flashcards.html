@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architect Card Explorer</title>
+    <link rel="icon" href="../brand/favicon.png">
+    <script src="js/map_render_algorithm.js"></script>
+    <style>
+        :root {
+            /* Variables for Light/Dark Mode toggle */
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border-color: #334155;
+            --accent: #38bdf8;
+            --shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+        }
+
+        /* Light Mode Overrides */
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-dim: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Horizontal Swipe Container for Mobile */
+        .card-carousel {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Responsive Grid for Desktop */
+        @media (min-width: 768px) {
+            .card-carousel {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                overflow-x: visible;
+                scroll-snap-type: none;
+            }
+        }
+
+        .card {
+            min-width: 85vw; /* Mobile card width */
+            scroll-snap-align: center;
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease;
+        }
+
+        @media (min-width: 768px) {
+            .card { min-width: auto; }
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 300px;
+            background: #2d3a4f;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-img {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+
+        .map-pin {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #ef4444;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 2;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+        }
+
+        .map-pin-transfer {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #ffffff;
+            border: 2px solid #555555;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 2;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: 800;
+            color: #333333;
+            line-height: 1;
+        }
+
+        .card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .heading-line {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .location-row {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .qty-badge {
+            margin-left: auto;
+            background: var(--border-color);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+
+        .placeholder-box {
+            background: rgba(0,0,0,0.05);
+            border: 1px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        [data-theme="dark"] .placeholder-box {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .label-sm {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .btn-audio {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #000;
+        }
+
+        .video-container iframe,
+        .video-container video {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+        }
+
+        .video-container video {
+            object-fit: contain;
+            background: #000;
+        }
+
+        .note-input {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            color: var(--text-main);
+            box-sizing: border-box;
+        }
+
+        .footer-controls {
+            margin-top: 50px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .theme-toggle {
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 1px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            cursor: pointer;
+        }
+
+        .btn-complete {
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .btn-complete[data-completed="0"] {
+            background: #38bdf8;
+            color: white;
+        }
+
+        .btn-complete[data-completed="1"] {
+            background: var(--border-color);
+            color: var(--text-dim);
+        }
+
+        .btn-note-submit {
+            margin-top: 8px;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            background: var(--border-color);
+            color: var(--text-dim);
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .btn-note-submit.note-dirty {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-lets-go {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            background: #22c55e;
+            color: white;
+            text-decoration: none;
+            transition: background 0.2s ease;
+        }
+
+        .btn-lets-go:hover {
+            background: #16a34a;
+        }
+
+        .btn-metro-selector {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            background: none;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+            text-decoration: none;
+            transition: background 0.2s ease, color 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .btn-metro-selector:hover {
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .line-colors-details summary {
+            background-color: #6d7e30;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            list-style: none;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .line-colors-details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .line-colors-details summary::after {
+            content: "▼";
+            float: right;
+            transition: transform 0.2s ease;
+        }
+
+        .line-colors-details[open] summary::after {
+            transform: rotate(180deg);
+        }
+
+        .line-colors-details summary:hover {
+            background-color: #5a6926;
+        }
+
+        .line-colors-details summary:active {
+            transform: scale(0.98);
+        }
+
+        .line-colors-details ul {
+            margin: 10px 0 0;
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--card-bg);
+            list-style: none;
+        }
+
+        .line-colors-details li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 6px 0;
+            font-size: 0.85rem;
+        }
+
+        .line-color-swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        /* ─── Route Progress Bar ──────────────────────────────── */
+
+        .route-progress {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .route-progress-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 0 0 6px;
+        }
+
+        .route-progress-detail {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin: 0;
+        }
+
+        .route-progress-detail strong {
+            color: var(--text-main);
+        }
+
+        .route-progress-stations {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .route-station-dot {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            color: var(--text-dim);
+        }
+
+        .route-station-dot.completed {
+            border-color: #22c55e;
+            color: #22c55e;
+        }
+
+        .route-station-dot.completed.clickable {
+            cursor: pointer;
+            background: none;
+            font-family: inherit;
+            transition: background 0.15s;
+        }
+
+        .route-station-dot.completed.clickable:hover {
+            background: rgba(34, 197, 94, 0.15);
+        }
+
+        .route-station-dot.current {
+            border-color: var(--accent);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* ─── Word Game ──────────────────────────────────────── */
+
+        .btn-submit-word {
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            background: #f59e0b;
+            color: white;
+            transition: background 0.2s ease;
+            margin-top: 8px;
+        }
+
+        .btn-submit-word:hover {
+            background: #d97706;
+        }
+
+        .btn-submit-word:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .game-result-msg {
+            text-align: center;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .game-result-msg.correct {
+            display: block;
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            border: 1px solid #22c55e;
+        }
+
+        .game-result-msg.incorrect {
+            display: block;
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        /* ─── Bottom Navigation Bar ──────────────────────────────── */
+
+        body {
+            padding-bottom: 60px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 8px 0 10px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 9;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.72rem;
+            padding: 4px 12px;
+            border-radius: 8px;
+            transition: color 0.2s;
+        }
+
+        .nav-item:hover {
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <div id="route-progress-bar" style="display:none;"></div>
+    <div class="card-carousel"></div>
+
+    <div class="footer-controls">
+        <button class="theme-toggle" onclick="toggleTheme()">Switch Light/Dark Mode</button>
+    </div>
+
+    <script type="module">
+        import { bootstrap } from './init/app_bootstrap.js';
+        import { getFilteredFlashcards, getRouteBatch, getWordGameCards, getAllWordGameCards } from './services/flashcard_service.js';
+        import { getFilters, getRouteMode, saveRouteMode, getWordGame, saveWordGame } from './services/filter_service.js';
+        import { getProgress, updateProgress } from './services/progress_service.js';
+        import { getAllFlashcards } from './repositories/flashcard_repository.js';
+        import { BRAND_BASE } from '../brand_loader.js';
+
+        const fcOrigin = sessionStorage.getItem('fc_origin');
+
+        const LineColors = {
+            "1": "#184b85", "2": "#33a13f", "3": "#ed6d00", "4": "#379ccc",
+            "5": "#784598", "6": "#7c4a32", "7": "#6d7e30", "8": "#d11a71", "9": "#a49d88"
+        };
+
+        // Station name → MetroAnimation asset path (mirrors MetroAnimation/js/station_maps.json)
+        const STATION_MAPS = {
+            "City Hall": "assets/line2_201_City_Hall.webp",
+            "Euljiro 1-ga": "assets/line2_202_Euljiro_1-ga.webp",
+            "Euljiro 3-ga": "assets/line2_203_Euljiro_3-ga.webp",
+            "Euljiro 4-ga": "assets/line2_204_Euljiro_4-ga.webp",
+            "Dongdaemun History & Culture Park": "assets/line2_205_Dongdaemun_History_&_Culture_Park.webp",
+            "Sindang": "assets/line2_206_Sindang.webp",
+            "Sangwangsimni": "assets/line2_207_Sangwangsimni.webp",
+            "Wangsimni": "assets/line2_208_Wangsimni.webp",
+            "Hanyang University": "assets/line2_209_Hanyang_University.webp",
+            "Ttukseom": "assets/line2_210_Ttukseom.webp",
+            "Seongsu": "assets/line2_211_Seongsu.webp",
+            "Konkuk University": "assets/line2_212_Konkuk_University.webp",
+            "Guui": "assets/line2_213_Guui.webp",
+            "Gangbyeon": "assets/line2_214_Gangbyeon.webp",
+            "Jamsilnaru": "assets/line2_215_Jamsilnaru.webp",
+            "Jamsil": "assets/line2_216_Jamsil.webp",
+            "Sports Complex": "assets/line2_218_Sports_Complex.webp",
+            "Samseong": "assets/line2_219_Samseong.webp",
+            "Seolleung": "assets/line2_220_Seolleung.webp",
+            "Yeoksam": "assets/line2_221_Yeoksam.webp",
+            "Gangnam": "assets/line2_222_Gangnam.webp",
+            "Seoul National University Court": "assets/line2_223_Seoul_National_University_of_Education.webp",
+            "Seocho": "assets/line2_224_Seocho.webp",
+            "Bangbae": "assets/line2_225_Bangbae.webp",
+            "Sadang": "assets/line2_226_Sadang.webp",
+            "Nakseongdae": "assets/line2_227_Nakseongdae.webp",
+            "Seoul National University Gwanakgu Office": "assets/line2_228_Seoul_National_University.webp",
+            "Bongcheon": "assets/line2_229_Bongcheon.webp",
+            "Sillim": "assets/line2_230_Sillim.webp",
+            "Sindaebang": "assets/line2_231_Sindaebang.webp",
+            "Guro Digital Complex": "assets/line2_232_Guro_Digital_Complex.webp",
+            "Daerim": "assets/line2_233_Daerim.webp",
+            "Sindorim": "assets/line2_234_Sindorim.webp",
+            "Mullae": "assets/line2_235_Mullae.webp",
+            "Yeongdeungpo-gu Office": "assets/line2_236_Yeongdeungpo-gu_Office.webp",
+            "Dangsan": "assets/line2_237_Dangsan.webp",
+            "Hapjeong": "assets/line2_238_Hapjeong.webp",
+            "Hongik University": "assets/line2_239_Hongik_University.webp",
+            "Sinchon": "assets/line2_240_Sinchon.webp",
+            "Ewha Womans University": "assets/line2_241_Ewha_Womans_University.webp",
+            "Ahyeon": "assets/line2_242_Ahyeon.webp",
+            "Chungjeongno": "assets/line2_243_Chungjeongno.webp",
+        };
+
+        function scheduleMetroImagePreload(departureStn, arrivalStn) {
+            const doPreload = async () => {
+                const urls = ['../MetroAnimation/map.png'];
+                try {
+                    const { loadBrandConfig } = await import('../brand_loader.js');
+                    const cfg = await loadBrandConfig();
+                    if (Array.isArray(cfg?.assets?.vehicles)) urls.push(...cfg.assets.vehicles);
+                } catch {}
+                if (departureStn && STATION_MAPS[departureStn]) {
+                    urls.push('../MetroAnimation/' + STATION_MAPS[departureStn]);
+                }
+                if (arrivalStn && STATION_MAPS[arrivalStn]) {
+                    urls.push('../MetroAnimation/' + STATION_MAPS[arrivalStn]);
+                }
+                urls.forEach(url => fetch(url).catch(() => {}));
+            };
+            if (window.requestIdleCallback) {
+                requestIdleCallback(doPreload, { timeout: 5000 });
+            } else {
+                setTimeout(doPreload, 1500);
+            }
+        }
+
+        function buildMetroPagestate(startStation, endStation, path) {
+            const lines = [];
+            const transfers = [];
+            if (path && path.length > 1) {
+                let cur = path[1].line;
+                lines.push(cur);
+                for (let i = 2; i < path.length; i++) {
+                    if (path[i].line !== cur) {
+                        transfers.push(path[i - 1].station);
+                        cur = path[i].line;
+                        lines.push(cur);
+                    }
+                }
+            }
+            return {
+                NearestMetro1: startStation,
+                NearestMetro2: endStation,
+                PlaceOfInterestName1: startStation,
+                PlaceOfInterestName2: endStation,
+                RouteLine1: lines[0] || null,
+                RouteLine2: lines[1] || null,
+                RouteLine3: lines[2] || null,
+                TotalTransfers: transfers.length,
+                TransferAtStation1: transfers[0] || null,
+                TransferAtStation2: transfers[1] || null,
+            };
+        }
+
+        async function computeAnimationStats(departureStn, arrivalStn) {
+            const allCards = await getAllFlashcards();
+            const allProgress = await Promise.all(allCards.map(c => getProgress(c.WordID)));
+            const progressMap = Object.fromEntries(allCards.map((c, i) => [c.WordID, allProgress[i]]));
+
+            const wordsCompleted = allCards.filter(c => progressMap[c.WordID]?.WordCompleted === '1').length;
+            const sentencesSeen  = allCards.filter(c => (progressMap[c.WordID]?.WordSeenQty || 0) > 0).length;
+
+            function stationStats(stationName, instanceNum) {
+                const sCards = allCards.filter(c => c.NearestMetro === stationName);
+                const visited = sCards.filter(c => progressMap[c.WordID]?.WordCompleted === '1').length;
+                const arrivals = sCards.length
+                    ? Math.max(...sCards.map(c => progressMap[c.WordID]?.MetroVisitsQty || 0))
+                    : 0;
+                const stationSentencesSeen = sCards.filter(c => (progressMap[c.WordID]?.WordSeenQty || 0) > 0).length;
+                return {
+                    Instance: instanceNum,
+                    // Station-specific
+                    PriorArrivals: arrivals,
+                    VenuesVisited: visited,
+                    VenuesNotVisited: sCards.length - visited,
+                    StationSentencesSeen: stationSentencesSeen,
+                    StationSentencesNotSeen: sCards.length - stationSentencesSeen,
+                    // Global
+                    WordsCompleted: wordsCompleted,
+                    WordsNotCompleted: allCards.length - wordsCompleted,
+                    SentencesSeen: sentencesSeen,
+                    SentencesNotSeen: allCards.length - sentencesSeen,
+                };
+            }
+
+            return [
+                stationStats(departureStn, 1),
+                stationStats(arrivalStn || departureStn, 2),
+            ];
+        }
+
+        function toEmbedURL(url) {
+            const u = (url || '').trim();
+            try {
+                const parsed = new URL(u.startsWith('//') ? 'https:' + u : u);
+                const host = parsed.hostname.replace(/^www\./, '');
+                if (host === 'youtube.com' && parsed.searchParams.has('v')) {
+                    return 'https://www.youtube.com/embed/' + parsed.searchParams.get('v');
+                }
+                if (host === 'youtu.be') {
+                    const id = parsed.pathname.slice(1).split('/')[0];
+                    if (id) return 'https://www.youtube.com/embed/' + id;
+                }
+            } catch {}
+            return null;
+        }
+
+        function esc(str) {
+            const d = document.createElement('div');
+            d.textContent = (str || '').trim();
+            return d.innerHTML;
+        }
+
+        function isSafeURL(url) {
+            try { return /^https?:\/\//i.test(new URL((url || '').trim()).href); }
+            catch { return false; }
+        }
+
+        function isSafeImageSrc(src) {
+            const s = (src || '').trim();
+            if (/^https?:\/\//i.test(s)) return true;
+            return /^data:image\/(png|jpeg|jpg|gif|webp|avif);base64,[A-Za-z0-9+/]+=*$/i.test(s);
+        }
+
+        function isSafeAssetFilename(name) {
+            return /^[\w\-]+\.(m4a|mp3|ogg|aac|png|jpg|jpeg|webp|gif)$/i.test((name || '').trim());
+        }
+
+        function getLineColor(input) {
+            const digit = typeof input === 'number'
+                ? String(Math.floor(input / 100))
+                : ((String(input || '')).match(/\d+/) || [])[0];
+            return LineColors[digit] || '#94a3b8';
+        }
+
+        function haversineKm(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2
+                    + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180)
+                    * Math.sin(dLon / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        function getStatusColor(record) {
+            if (record.WordCompleted === "1") return "green";
+            if (parseInt(record.WordSeenQty) > 0) return "orange";
+            return "red";
+        }
+
+        function createCard(record, maps) {
+            const card = document.createElement('div');
+            card.className = 'card';
+
+            const lineColor = getLineColor(record.NearestMetroCode);
+            const statusColor = getStatusColor(record);
+            const hasSponsor = (record.SponsorName || '').trim() !== ''
+                || (record.SponsorURL || '').trim() !== ''
+                || (record.SponsorAsset || '').trim() !== '';
+            const hasAudio = (record.AudioURL || '').trim() !== '' && isSafeAssetFilename(record.AudioURL);
+            const hasVideo = (record.VideoURL || '').trim() !== '';
+            const embedURL = hasVideo && /^(https?:)?\/\//i.test(record.VideoURL.trim()) ? toEmbedURL(record.VideoURL) : null;
+            const videoIsLocal = hasVideo && !(/^(https?:)?\/\//i.test(record.VideoURL.trim())) && isSafeAssetFilename(record.VideoURL);
+
+            card.innerHTML = `
+                <div class="map-placeholder"><img class="map-img" alt="" /></div>
+                <div class="card-body">
+                    <h2 class="heading-line" style="color: ${lineColor};">${esc(record.PlaceOfInterestNameEng)}</h2>
+
+                    <div class="location-row">
+                        <span>${esc(record.PlaceOfInterestNameEng)}, ${esc(record.Neighborhood)} near ${esc(record.NearestMetro)} (Approx. ${Math.round(parseFloat(record.DistanceToMetro) * 1000)} meters) - ${esc(record.PlaceOfInterestNameKor)}</span>
+                        <span class="qty-badge">${esc(record.WordSeenQty)}</span>
+                    </div>
+
+                    <div class="placeholder-box" style="text-align: center; position: relative;">
+                        <span class="status-dot" style="background: ${statusColor}; position: absolute; top: 12px; right: 12px;"></span>
+                        <span class="label-sm">Word</span>
+                        <strong style="font-size: 2em;">${esc(record.KoreanWord)}</strong>
+                    </div>
+
+                    <button class="btn-complete" data-completed="${esc(record.WordCompleted)}"></button>
+
+                    <div class="placeholder-box">
+                        <span class="label-sm">Sentence</span>
+                        <strong>${esc(record.InContextSentence)}</strong>
+                        <p style="margin: 5px 0 0; font-size: 0.85rem; color: var(--text-dim);">${esc(record.SentenceDescription)}</p>
+                    </div>
+
+                    <div class="placeholder-box">
+                        <span class="label-sm">Part of Speech / Honorifics</span>
+                        <span style="font-size: 0.85rem;">${esc(record.PartOfSpeech)} / ${esc(record.SentenceHonorifics)}</span>
+                    </div>
+
+                    <div class="placeholder-box">
+                        <span class="label-sm">Category / Route</span>
+                        <span style="font-size: 0.85rem;">${esc(record.WordCategory)} / ${esc(record.RouteName)}</span>
+                    </div>
+
+                    <div class="placeholder-box">
+                        <span class="label-sm">Meaning</span>
+                        <strong>${esc(record.WordDescription)}</strong>
+                    </div>
+
+                    <div class="placeholder-box">
+                        <span class="label-sm">Learning Track</span>
+                        <span style="font-size: 0.85rem;">${esc(record.RouteName)}</span>
+                    </div>
+
+                    ${hasSponsor ? `
+                    <div class="placeholder-box">
+                        <span class="label-sm">Spotlight On</span>
+                        ${record.SponsorAsset && isSafeAssetFilename(record.SponsorAsset) ? `<img src="${esc(BRAND_BASE + record.SponsorAsset)}" alt="${esc(record.SponsorName)}" style="max-width: 100%; height: auto; display: block; margin-bottom: 0.5rem;">` : `<strong>${esc(record.SponsorName)}</strong><br>`}
+                        ${record.SponsorURL && isSafeURL(record.SponsorURL) ? `<a href="${esc(record.SponsorURL)}" target="_blank" rel="noopener" style="color: var(--accent); font-size: 0.8rem;">Visit Website</a>` : ''}
+                    </div>` : ''}
+
+                    ${hasAudio ? `<button class="btn-audio" data-audio-url="${esc(record.AudioURL)}">Play Pronunciation</button>` : ''}
+
+                    ${embedURL || videoIsLocal ? `
+                    <div class="video-container">
+                        ${embedURL
+                            ? `<iframe src="${esc(embedURL)}" frameborder="0" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>`
+                            : `<video src="assets/${esc(record.VideoURL)}" controls preload="metadata" playsinline></video>`}
+                    </div>` : ''}
+
+                    ${(record.SharedImageData || '').trim() !== '' && isSafeImageSrc(record.SharedImageData) ? `
+                    <div class="placeholder-box">
+                        <span class="label-sm">Shared Image</span>
+                        <img src="${esc(record.SharedImageData)}" alt="Shared image" style="max-width: 100%; height: auto; display: block;">
+                    </div>` : ''}
+
+                    <div>
+                        <span class="label-sm">Personal Note</span>
+                        <textarea class="note-input" placeholder="Type your notes here..." rows="2">${esc(record.PersonalNote)}</textarea>
+                        <button class="btn-note-submit">${record.PersonalNote ? 'Update Note' : 'Submit Note'}</button>
+                    </div>
+                </div>
+            `;
+
+            const mapEl = card.querySelector('.map-placeholder');
+            const mapImg = maps[record.NearestMetroCode];
+            if (mapImg) {
+                mapEl.querySelector('.map-img').src = `assets/${mapImg}`;
+            }
+
+            const completeBtn = card.querySelector('.btn-complete');
+            function updateCompleteBtn() {
+                const completed = completeBtn.dataset.completed;
+                completeBtn.textContent = completed === '1' ? 'Review Again' : 'Mark Complete';
+            }
+            updateCompleteBtn();
+            completeBtn.addEventListener('click', async () => {
+                const newCompleted = completeBtn.dataset.completed === '1' ? '0' : '1';
+                completeBtn.dataset.completed = newCompleted;
+                updateCompleteBtn();
+                await updateProgress(record.WordID, { WordCompleted: newCompleted });
+            });
+
+            const noteTextarea = card.querySelector('.note-input');
+            const noteSubmitBtn = card.querySelector('.btn-note-submit');
+            let savedNote = record.PersonalNote || '';
+
+            noteTextarea.addEventListener('input', () => {
+                const isDirty = noteTextarea.value.trim() !== savedNote;
+                noteSubmitBtn.classList.toggle('note-dirty', isDirty);
+            });
+
+            noteSubmitBtn.addEventListener('click', async () => {
+                const newNote = noteTextarea.value.trim();
+                await updateProgress(record.WordID, { PersonalNote: newNote });
+                savedNote = newNote;
+                noteSubmitBtn.classList.remove('note-dirty');
+                noteSubmitBtn.textContent = newNote ? 'Update Note' : 'Submit Note';
+            });
+
+            const audioBtn = card.querySelector('.btn-audio');
+            if (audioBtn) {
+                const audio = new Audio();
+                audioBtn.addEventListener('click', () => {
+                    audio.src = 'assets/' + audioBtn.dataset.audioUrl;
+                    audio.play();
+                });
+            }
+
+            return card;
+        }
+
+        function positionMapPin(mapEl, record, stationCodes) {
+            const station = stationCodes[record.NearestMetroCode];
+            if (!station || !record.Latitude || !record.Longitude) return;
+
+            const center = { lat: parseFloat(station.lat), lon: parseFloat(station.lng) };
+            const pos = latLonToPixel(
+                parseFloat(record.Latitude),
+                parseFloat(record.Longitude),
+                center
+            );
+
+            // object-fit: cover on a square 964×964 image in a W×200px container:
+            // The image scales so its width fills the container (W > 200 for all card widths),
+            // and the excess height is cropped equally from top and bottom.
+            const containerW = mapEl.offsetWidth;
+            const containerH = 200;
+            const scale = containerW / IMAGE_SIZE;
+
+            const pinLeft = pos.x * scale;
+            const pinTop  = pos.y * scale - (containerW - containerH) / 2;
+
+            const pin = document.createElement('div');
+            pin.className = 'map-pin';
+            pin.style.left = `${pinLeft}px`;
+            pin.style.top  = `${pinTop}px`;
+            mapEl.appendChild(pin);
+        }
+
+        function positionRouteMapPins(mapEl, path, stationCodes) {
+            // Bounding box of assets/map_seoul_all_lines_small.jpg (1000×666 px)
+            const IMAGE_W = 1000;
+            const IMAGE_H = 666;
+            const LNG_MIN = 126.84514161904843;
+            const LNG_MAX = 127.18321163123785;
+            const LAT_MIN = 37.445398290586525;
+            const LAT_MAX = 37.624180486925965;
+
+            const containerW = mapEl.offsetWidth;
+            const containerH = mapEl.offsetHeight || 300;
+
+            // object-fit: cover scales by whichever axis fills the container first
+            const scaleByWidth  = containerW / IMAGE_W;
+            const scaleByHeight = containerH / IMAGE_H;
+            const scale = Math.max(scaleByWidth, scaleByHeight);
+
+            // With object-position: center, the rendered image is centred in the container
+            const renderedW = IMAGE_W * scale;
+            const renderedH = IMAGE_H * scale;
+            const offsetX = (containerW - renderedW) / 2;
+            const offsetY = (containerH - renderedH) / 2;
+
+            // Build name → {lat, lng} lookup (first match wins for transfer stations)
+            const byName = {};
+            for (const code in stationCodes) {
+                const s = stationCodes[code];
+                if (s.station_name_eng && !byName[s.station_name_eng]) {
+                    byName[s.station_name_eng] = { lat: parseFloat(s.lat), lng: parseFloat(s.lng) };
+                }
+            }
+
+            path.forEach((stop, i) => {
+                const coords = byName[stop.station];
+                if (!coords) return;
+
+                // Direct bounding-box projection
+                const xPixel = (coords.lng - LNG_MIN) / (LNG_MAX - LNG_MIN) * IMAGE_W;
+                const yPixel = (LAT_MAX - coords.lat) / (LAT_MAX - LAT_MIN) * IMAGE_H;  // Y inverted
+
+                const pinLeft = xPixel * scale + offsetX;
+                const pinTop  = yPixel * scale + offsetY;
+
+                const isFirst    = i === 0;
+                const isLast     = i === path.length - 1;
+                const isTransfer = !isFirst && !isLast && path[i + 1].line !== stop.line;
+
+                const pin = document.createElement('div');
+                if (isTransfer) {
+                    pin.className   = 'map-pin-transfer';
+                    pin.textContent = 'T';
+                } else {
+                    // First stop has line: null — use the first departing line instead
+                    const lineStr = stop.line || (path[1] ? path[1].line : null);
+                    pin.className        = 'map-pin';
+                    pin.style.background = getLineColor(lineStr);
+                }
+                pin.style.left = `${pinLeft}px`;
+                pin.style.top  = `${pinTop}px`;
+                mapEl.appendChild(pin);
+            });
+        }
+
+        function renderCards(data, maps, stationCodes) {
+            const carousel = document.querySelector('.card-carousel');
+            const records = Object.values(data);
+            records.forEach(record => {
+                const card = createCard(record, maps);
+                carousel.appendChild(card);
+                positionMapPin(card.querySelector('.map-placeholder'), record, stationCodes);
+                observeCardVisibility(card, record);
+            });
+            carousel.appendChild(createListCompleteCard());
+        }
+
+        function observeCardVisibility(cardEl, record) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+
+                    // Track sponsor viewed — increment each time a sponsor card enters viewport
+                    const hasSponsor = (record.SponsorName || '').trim() !== ''
+                        || (record.SponsorURL || '').trim() !== ''
+                        || (record.SponsorAsset || '').trim() !== '';
+                    if (hasSponsor) {
+                        const newSponsorSeen = (parseInt(record.SponsorSeen) || 0) + 1;
+                        record.SponsorSeen = newSponsorSeen;
+                        updateProgress(record.WordID, { SponsorSeen: newSponsorSeen });
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            observer.observe(cardEl);
+        }
+
+        // Word-game variant: fires onSeen() for MetroVisitsQty (gated once per card per session)
+        function observeWordGameCardVisibility(cardEl, record, onSeen) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+
+                    // Track sponsor viewed
+                    const hasSponsor = (record.SponsorName || '').trim() !== ''
+                        || (record.SponsorURL || '').trim() !== ''
+                        || (record.SponsorAsset || '').trim() !== '';
+                    if (hasSponsor) {
+                        const newSponsorSeen = (parseInt(record.SponsorSeen) || 0) + 1;
+                        record.SponsorSeen = newSponsorSeen;
+                        updateProgress(record.WordID, { SponsorSeen: newSponsorSeen });
+                    }
+
+                    // Notify caller so MetroVisitsQty can be gated per card per session
+                    if (onSeen) onSeen();
+                });
+            }, { threshold: 0.5 });
+
+            observer.observe(cardEl);
+        }
+
+        function buildBackButtons(isRouteMode = false) {
+            const explorerLabel = isRouteMode ? 'Back to Routes' : 'Back to Explorer';
+            if (fcOrigin === 'explorer') {
+                return `<a href="index.html" class="btn-lets-go" style="display:inline-block;margin-top:20px;">${explorerLabel}</a>`;
+            }
+            if (fcOrigin === 'metro') {
+                return `<a href="../MetroLineSelector/index.html" class="btn-metro-selector" style="display:inline-block;margin-top:20px;">Back to Metro Selector</a>`;
+            }
+            return `<a href="index.html" class="btn-lets-go" style="display:inline-block;margin-top:20px;">Go to Explorer</a>
+                    <a href="../MetroLineSelector/index.html" class="btn-metro-selector" style="display:inline-block;">Go to Metro Selector</a>`;
+        }
+
+        function createListCompleteCard() {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-body" style="text-align:center;padding:40px 20px;">
+                    <h2 class="heading-line" style="color: var(--accent);">List Complete</h2>
+                    <p style="color:var(--text-dim);margin:16px 0;">
+                        You've completed all words in this category!
+                    </p>
+                    ${buildBackButtons()}
+                </div>
+            `;
+            return card;
+        }
+
+        function computeMetroRoute(startStation, endStation) {
+            const LINES = {
+                "Line 1": ['Sinseol-dong','Dongmyo','Dongdaemun','Jongno 5-ga','Jongno 3-ga','Jonggak','City Hall','Seoul Station','Namyeong','Yongsan','Noryangjin','Daebang','Singil','Yeongdeunpo','Sindorim','Guro','Guil','Gaebong','Oryu-dong','Onsu'],
+                "Line 2": ['Euljiro 4-ga','Dongdaemun History & Culture Park','Sindang','Sangwangsimni','Wangsimni','Hanyang University','Ttukseom','Seongsu','Konkuk University','Guui','Gangbyeon','Jamsilnaru','Jamsil','Sports Complex','Samseong','Seolleung','Yeoksam','Gangnam','Seoul National University Court','Seocho','Bangbae','Sadang','Nakseongdae','Seoul National University Gwanakgu Office','Nambu Bus Terminal','Bongcheon','Sillim','Sindaebang','Guro Digital Complex','Daerim','Sindorim','Mullae','Yeongdeungpo-gu Office','Dangsan','Hapjeong','Hongik University','Sinchon','Ewha Womans University','Ahyeon','Chungjeongno','City Hall','Euljiro 1-ga','Euljiro 3-ga'],
+                "Line 3": ['Daehwa','Juyeop','Jeongbalsan','Madu','Baekseok','Daegok','Hwajeong','Wondang','Wonheung','Samsong','Jichuk','Gupabal','Yeonsinnae','Bulgwang','Nokbeon','Hongje','Muakjae','Dongnimmun','Gyeongbokgung','Anguk','Jongno 3-ga','Euljiro 3-ga','Chungmuro','Dongguk University','Yaksu','Geumho','Oksu','Apgujeong','Sinsa','Jamwon','Express Bus Terminal','Seoul National University Court','Nambu Bus Terminal','Yangjae','Maebong','Dogok','Daechi','Hangnyeoul','Daecheong','Irwon','Suseo'],
+                "Line 4": ["Sungshin Women's University","Hansung University","Hyehwa","Dongdaemun","Dongdaemun History & Culture Park","Chungmuro","Myeong-dong","Hoehyeon","Seoul Station","Sookmyung Women's University","Samgakji","Sinyongsan","Ichon","Dongjak","Isu","Sadang","Namtaeryeong","Seonbawi","Seoul Grand Park","Gwacheon","Government Complex Gwacheon","Indeogwon","Pyeongchon","Beomgye","Geumjeong"],
+                "Line 5": ['Banghwa','Gaehwasan','Gimpo International Airport','Songjeong','Magok','Balsan','Ujangsan','Hwagok','Kkachisan','Sinjeong','Mok-dong','Omokgyo','Yangpyeong','Yeongdeungpo-gu Office','Yeongdeungpo Market','Singil','Yeouido','Yeouinaru','Mapo','Gongdeok','Aeogae','Chungjeongno','Seodaemun','Gwanghwamun','Jongno 3-ga','Euljiro 4-ga','Dongdaemun History & Culture Park','Cheonggu','Singeumho','Haengdang','Wangsimni','Majang','Dapsimni','Janghanpyeong','Gunja','Achasan','Gwangnaru','Cheonho','Gangdong','Dangchandong','Olympic Park','Bangi','Ogeum'],
+                "Line 6": ['Digital Media City','World Cup Stadium','Mapo-gu Office','Mangwon','Hapjeong','Sangsu','Gwangheungchang','Daeheung','Gongdeok','Hyochang Park','Samgakji','Itaewon','Hangangjin','Beotigogae','Yaksu','Cheonggu','Sindang','Dongmyo','Changsin','Bomun','Anam','Korea University','Wolgok','Sangwolgok','Dolgoji','Seokgye'],
+                "Line 7": ['Gunja',"Children's Grand Park",'Konkuk University','Jayang (Ttukseom Hangang Park)','Cheongdam','Gangnam-gu Office','Hak-dong','Nonhyeon','Banpo','Express Bus Terminal','Naebang','Isu','Namseong','Soongsil University (Salpijae)','Sangdo','Jangseungbaegi','Sindaebangsamgeori','Boramae','Sinpung','Daerim','Namguro','Gasan Digital Complex','Cheolsan','Gwangmyeongsageori','Cheonwang','Onsu'],
+                "Line 8": ['Amsa','Cheonho','Gangdong-gu Office','Mongchontoseong (Peace Gate)','Jamsil','Seokchon','Songpa','Garak Market'],
+                "Line 9": ['Gaehaw','Gimpo Intl Airport','Airport Market','Sinbanghwa','Magongnaru','Yangcheon Hyanggyo','Gayang','Jeungmi','Deungchon','Yeomchang','Sinmockdong','Seonyudo','Dangsan','National Assembly','Yeouido','Saetgang','Noryangjin','Nodeul','Heukseok','Dongjak','Gubanpo','Sinbanpo','Express Bus Terminal','Sappyeong','Sinnonhyeon','Eonju','Seonjeongneung','Samseong Jungang','Bongeunsa','Sports Complex','Samjeon','Seokchon Gobun','Seokchon','Sonpanauru','Hangseong Baekje','Olympic Park','Duchon Oryun','VHS Medical Center']
+            };
+
+            const graph = {};
+            function addEdge(a, b, line) {
+                if (!graph[a]) graph[a] = [];
+                graph[a].push({ station: b, line });
+            }
+            for (let line in LINES) {
+                const s = LINES[line];
+                for (let i = 0; i < s.length - 1; i++) {
+                    addEdge(s[i], s[i+1], line);
+                    addEdge(s[i+1], s[i], line);
+                }
+            }
+
+            function binaryInsert(arr, item) {
+                let lo = 0, hi = arr.length;
+                while (lo < hi) {
+                    const mid = (lo + hi) >>> 1;
+                    if (arr[mid].cost <= item.cost) lo = mid + 1;
+                    else hi = mid;
+                }
+                arr.splice(lo, 0, item);
+            }
+
+            if (startStation === endStation) return null;
+            let queue = [{ station: startStation, path: [{ station: startStation, line: null }], line: null, transfers: 0, cost: 0 }];
+            let visited = new Set();
+
+            while (queue.length) {
+                const curr = queue.shift();
+                if (curr.station === endStation) return { path: curr.path, transfers: curr.transfers };
+                const key = curr.station + curr.line;
+                if (visited.has(key)) continue;
+                visited.add(key);
+                (graph[curr.station] || []).forEach(n => {
+                    let t = curr.transfers;
+                    if (curr.line && curr.line !== n.line) t++;
+                    const newPath = [...curr.path, { station: n.station, line: n.line }];
+                    const cost = t * 5 + (newPath.length - 1);
+                    binaryInsert(queue, { station: n.station, path: newPath, line: n.line, transfers: t, cost });
+                });
+            }
+            return null;
+        }
+
+        function createRouteCard(lastRecord, maps, stationCodes, pagestate) {
+            const startStation = (lastRecord.NearestMetro || '').trim();
+            const endStation = (pagestate.NearestMetro2_Destination || '').trim();
+            const startPOI = (lastRecord.PlaceOfInterestNameEng || '').trim();
+            const endPOI = (pagestate.PlaceOfInterestName2_Destination || '').trim();
+
+            const route = computeMetroRoute(startStation, endStation);
+            const lineColor = getLineColor(lastRecord.NearestMetroCode);
+
+            let instructionsHTML = '';
+            let stopsHTML = '';
+
+            if (!route) {
+                instructionsHTML = `<span style="color: var(--text-dim);">No route found between these stations.</span>`;
+            } else {
+                const path = route.path;
+
+                // Build segment instructions
+                let currentLine = path[1].line;
+                let segmentStart = path[0].station;
+                const instructions = [];
+                for (let i = 1; i < path.length; i++) {
+                    if (path[i].line !== currentLine) {
+                        instructions.push(`Take <b>${esc(currentLine)}</b> from <b>${esc(segmentStart)}</b> to <b>${esc(path[i-1].station)}</b>`);
+                        instructions.push(`Transfer at <b>${esc(path[i-1].station)}</b>`);
+                        currentLine = path[i].line;
+                        segmentStart = path[i-1].station;
+                    }
+                }
+                instructions.push(`Take <b>${esc(currentLine)}</b> from <b>${esc(segmentStart)}</b> to <b>${esc(path[path.length-1].station)}</b>`);
+                instructionsHTML = instructions.map(s =>
+                    `<div style="font-size:0.85rem; padding:5px 0; border-bottom:1px solid var(--border-color);">${s}</div>`
+                ).join('');
+
+                // Build vertical stop list — two-column layout so transfers show both line colours side by side.
+                // Odd segments (1st, 3rd…) sit on the LEFT column; even segments (2nd, 4th…) on the RIGHT.
+                // At a LEFT→RIGHT transfer the arriving dot stays on the left and the departing dot appears
+                // on the right; at a RIGHT→LEFT transfer the pattern mirrors back.
+                const aboveLineFrag = c => `<div style="position:absolute;top:0;height:50%;left:50%;width:2px;transform:translateX(-50%);background:${c};"></div>`;
+                const belowLineFrag = c => `<div style="position:absolute;top:50%;height:50%;left:50%;width:2px;transform:translateX(-50%);background:${c};"></div>`;
+                const dotFrag = c => `<div style="width:12px;height:12px;border-radius:50%;background:#000;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;position:relative;"><div style="width:9px;height:9px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;"><div style="width:5px;height:5px;border-radius:50%;background:${c};"></div></div></div>`;
+
+                let stopSegment = 0;
+                stopsHTML = path.map((p, i) => {
+                    const isFirst = i === 0;
+                    const isLast  = i === path.length - 1;
+                    const isTransfer = !isFirst && !isLast && path[i + 1].line !== p.line;
+
+                    const arrivingLine  = !isFirst ? p.line : (path[1] ? path[1].line : null);
+                    const departingLine = !isLast  ? path[i + 1].line : p.line;
+                    const aC = getLineColor(arrivingLine);   // arriving colour
+                    const dC = getLineColor(departingLine);  // departing colour
+
+                    const seg = stopSegment;
+                    if (isTransfer) stopSegment++;
+                    const onLeft = seg % 2 === 0; // even segments → left column
+
+                    let leftHtml = '', rightHtml = '';
+
+                    if (!isTransfer) {
+                        // Regular stop: both arriving and departing colours are the same
+                        const track = `${!isFirst ? aboveLineFrag(aC) : ''}${!isLast ? belowLineFrag(aC) : ''}${dotFrag(aC)}`;
+                        if (onLeft) { leftHtml = track; } else { rightHtml = track; }
+                    } else if (onLeft) {
+                        // LEFT → RIGHT transfer: arriving dot on left, departing dot on right
+                        leftHtml  = `${aboveLineFrag(aC)}${dotFrag(aC)}`;
+                        rightHtml = `${dotFrag(dC)}${belowLineFrag(dC)}`;
+                    } else {
+                        // RIGHT → LEFT transfer: arriving dot on right, departing dot on left
+                        rightHtml = `${aboveLineFrag(aC)}${dotFrag(aC)}`;
+                        leftHtml  = `${dotFrag(dC)}${belowLineFrag(dC)}`;
+                    }
+
+                    return `<div style="display:flex;align-items:stretch;gap:2px;min-height:26px;">
+                        <div style="position:relative;width:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">${leftHtml}</div>
+                        <div style="position:relative;width:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">${rightHtml}</div>
+                        <div style="margin-left:6px;padding:3px 0;font-size:0.82rem;display:flex;align-items:center;line-height:1.3;">
+                            ${esc(p.station)}${isTransfer ? ` <span style="font-size:0.7rem;color:#f59e0b;margin-left:4px;">(transfer)</span>` : ''}
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="map-placeholder"><img class="map-img" alt="" /></div>
+                <div class="card-body">
+                    <h2 class="heading-line" style="color: ${lineColor};">Metro Route</h2>
+
+                    <div class="placeholder-box">
+                        <span class="label-sm">From</span>
+                        <strong>${esc(startPOI)}</strong>
+                        <p style="margin:4px 0 0;font-size:0.85rem;color:var(--text-dim);">${esc(startStation)}</p>
+                    </div>
+
+                    <div class="placeholder-box">
+                        <span class="label-sm">To</span>
+                        <strong>${esc(endPOI)}</strong>
+                        <p style="margin:4px 0 0;font-size:0.85rem;color:var(--text-dim);">${esc(endStation)}</p>
+                    </div>
+
+                    <a href="#placeholder-url" class="btn-lets-go">Let's go</a>
+
+                    <div class="placeholder-box">
+                        <span class="label-sm">Route Instructions</span>
+                        <div style="margin-top:8px;display:flex;flex-direction:column;">
+                            ${instructionsHTML}
+                        </div>
+                    </div>
+
+                    ${route ? `
+                    <div class="placeholder-box">
+                        <span class="label-sm">All Stops</span>
+                        <div style="margin-top:8px;display:flex;flex-direction:column;">
+                            ${stopsHTML}
+                        </div>
+                    </div>
+
+                    <div class="placeholder-box">
+                        <span class="label-sm">Total Transfers</span>
+                        <strong>${route.transfers}</strong>
+                    </div>
+
+                    <details class="line-colors-details">
+                        <summary>색 (Line Colours)</summary>
+                        <ul>
+                            <li><span class="line-color-swatch" style="background:#184b85;"></span>진한파란색 (Dark Blue) — Line 1</li>
+                            <li><span class="line-color-swatch" style="background:#33a13f;"></span>녹색 (Green) — Line 2</li>
+                            <li><span class="line-color-swatch" style="background:#ed6d00;"></span>주황색 (Orange) — Line 3</li>
+                            <li><span class="line-color-swatch" style="background:#379ccc;"></span>연한파란색 (Light Blue) — Line 4</li>
+                            <li><span class="line-color-swatch" style="background:#784598;"></span>보라색 (Purple) — Line 5</li>
+                            <li><span class="line-color-swatch" style="background:#7c4a32;"></span>갈색 (Brown) — Line 6</li>
+                            <li><span class="line-color-swatch" style="background:#6d7e30;"></span>올리브그린 (Olive Green) — Line 7</li>
+                            <li><span class="line-color-swatch" style="background:#d11a71;"></span>분홍색 (Pink) — Line 8</li>
+                            <li><span class="line-color-swatch" style="background:#a49d88;"></span>베이지 (Beige) — Line 9</li>
+                        </ul>
+                        <p style="font-size:0.8rem; font-weight:600; margin:0.75rem 0 0.4rem; opacity:0.7;">Other Common Colors</p>
+                        <ul>
+                            <li><span class="line-color-swatch" style="background:#f5c518;"></span>노란색 (Yellow)</li>
+                            <li><span class="line-color-swatch" style="background:#e03131;"></span>빨간색 (Red)</li>
+                            <li><span class="line-color-swatch" style="background:#212121;"></span>검은색 (Black)</li>
+                            <li><span class="line-color-swatch" style="background:#f8f8f8; border:1px solid #aaa;"></span>흰색 (White)</li>
+                            <li><span class="line-color-swatch" style="background:#9e9e9e;"></span>회색 (Gray)</li>
+                        </ul>
+                    </details>` : ''}
+                </div>
+            `;
+
+            card.querySelector('.map-img').src = 'assets/map_seoul_all_lines_small.webp';
+
+            return { card, path: route ? route.path : null };
+        }
+
+        // ─── Route Mode ───────────────────────────────────────────────────────────
+
+        function createRouteCompleteCard(routeName, completedMetros) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            const stationsHtml = (completedMetros || []).length > 0
+                ? `<p style="color:var(--text-dim);font-size:0.85rem;margin:12px 0 0;">
+                       Stations visited: ${completedMetros.map(m => esc(m)).join(' &rarr; ')}
+                   </p>`
+                : '';
+            card.innerHTML = `
+                <div class="card-body" style="text-align:center;padding:40px 20px;">
+                    <h2 class="heading-line" style="color: var(--accent);">Route Complete</h2>
+                    <p style="color:var(--text-dim);margin:16px 0;">
+                        You've completed all stations on <strong>${esc(routeName)}</strong>!
+                    </p>
+                    ${stationsHtml}
+                    ${buildBackButtons(true)}
+                </div>
+            `;
+            return card;
+        }
+
+        function renderRouteProgress(routeMode, batchResult, onStationClick) {
+            const bar = document.getElementById('route-progress-bar');
+            const completed = routeMode.completedMetros || [];
+            const completedStartWordIDs = routeMode.completedStartWordIDs || [];
+
+            const stationDots = completed.map((m, i) => {
+                const hasWordID = completedStartWordIDs[i] != null && onStationClick;
+                if (hasWordID) {
+                    return `<button class="route-station-dot completed clickable" data-idx="${i}" title="View cards from ${esc(m)}">${esc(m)}</button>`;
+                }
+                return `<span class="route-station-dot completed">${esc(m)}</span>`;
+            }).join('') + (batchResult.currentMetro
+                ? `<span class="route-station-dot current">${esc(batchResult.currentMetro)}</span>`
+                : '');
+
+            bar.innerHTML = `
+                <div class="route-progress">
+                    <p class="route-progress-title">Following: ${esc(routeMode.routeName)}</p>
+                    <p class="route-progress-detail">
+                        Current station: <strong>${esc(batchResult.currentMetro || '—')}</strong>
+                        — ${batchResult.batch.length} card${batchResult.batch.length !== 1 ? 's' : ''} at this stop
+                    </p>
+                    ${stationDots ? `<div class="route-progress-stations">${stationDots}</div>` : ''}
+                </div>
+            `;
+
+            if (onStationClick) {
+                bar.querySelectorAll('.route-station-dot.clickable').forEach(btn => {
+                    btn.addEventListener('click', () => onStationClick(parseInt(btn.dataset.idx)));
+                });
+            }
+
+            bar.style.display = '';
+        }
+
+        async function loadHistoricalBatch(startWordID, currentRouteMode, maps, stationCodes) {
+            const carousel = document.querySelector('.card-carousel');
+            carousel.innerHTML = '';
+
+            const batchResult = await getRouteBatch(currentRouteMode.routeName, startWordID);
+            if (batchResult.batch.length === 0) return;
+
+            const enriched = await enrichRecords(batchResult.batch);
+
+            enriched.forEach(record => {
+                const card = createCard(record, maps);
+                carousel.appendChild(card);
+                positionMapPin(card.querySelector('.map-placeholder'), record, stationCodes);
+            });
+
+            // "Back to current station" card
+            const returnCard = document.createElement('div');
+            returnCard.className = 'card';
+            returnCard.innerHTML = `
+                <div class="card-inner" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px 24px;text-align:center;min-height:220px;">
+                    <p style="color:var(--text-dim);font-size:0.85rem;margin:0;">
+                        Viewing past cards from:<br>
+                        <strong style="color:var(--text-main);font-size:1rem;">${esc(batchResult.currentMetro)}</strong>
+                    </p>
+                    <button class="btn-return-current" style="padding:10px 22px;border-radius:8px;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:0.9rem;font-weight:600;">
+                        ← Back to current station
+                    </button>
+                </div>
+            `;
+            returnCard.querySelector('.btn-return-current').addEventListener('click', () => {
+                loadRouteBatch(currentRouteMode, maps, stationCodes);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            carousel.appendChild(returnCard);
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function enrichRecords(records) {
+            const progressEntries = await Promise.all(
+                records.map(async r => [r.WordID, await getProgress(r.WordID)])
+            );
+            const progressMap = Object.fromEntries(progressEntries);
+            return records.map(r => ({
+                ...r,
+                WordCompleted: progressMap[r.WordID].WordCompleted,
+                WordSeenQty: String(progressMap[r.WordID].WordSeenQty),
+                PersonalNote: progressMap[r.WordID].PersonalNote,
+                SponsorSeen: progressMap[r.WordID].SponsorSeen,
+                MetroVisitsQty: progressMap[r.WordID].MetroVisitsQty,
+                NeighborhoodVisitedQty: progressMap[r.WordID].NeighborhoodVisitedQty,
+                WordGameScore: progressMap[r.WordID].WordGameScore,
+                WordGameWordCompleted: progressMap[r.WordID].WordGameWordCompleted,
+            }));
+        }
+
+        async function loadRouteBatch(routeMode, maps, stationCodes) {
+            const carousel = document.querySelector('.card-carousel');
+            carousel.innerHTML = '';
+
+            const batchResult = await getRouteBatch(routeMode.routeName, routeMode.nextWordID ?? null);
+
+            const onStationClick = (idx) => {
+                const wordID = (routeMode.completedStartWordIDs || [])[idx];
+                if (wordID != null) loadHistoricalBatch(wordID, routeMode, maps, stationCodes);
+            };
+
+            if (batchResult.batch.length === 0) {
+                // Route is fully complete — show completion card
+                const completeCard = createRouteCompleteCard(
+                    routeMode.routeName,
+                    [...(routeMode.completedMetros || []), batchResult.currentMetro].filter(Boolean)
+                );
+                carousel.appendChild(completeCard);
+                renderRouteProgress(routeMode, batchResult, onStationClick);
+                return;
+            }
+
+            // Enrich batch cards with progress
+            const enriched = await enrichRecords(batchResult.batch);
+
+            // Count all cards in this batch as seen, and track metro/neighborhood visits
+            await Promise.all(enriched.map(record => {
+                const newSeenQty = (parseInt(record.WordSeenQty) || 0) + 1;
+                const newMetro = (parseInt(record.MetroVisitsQty) || 0) + 1;
+                const newNeighborhood = (parseInt(record.NeighborhoodVisitedQty) || 0) + 1;
+                record.WordSeenQty = String(newSeenQty);
+                record.MetroVisitsQty = newMetro;
+                record.NeighborhoodVisitedQty = newNeighborhood;
+                return updateProgress(record.WordID, {
+                    WordSeenQty: newSeenQty,
+                    MetroVisitsQty: newMetro,
+                    NeighborhoodVisitedQty: newNeighborhood,
+                });
+            }));
+
+            // Render route progress bar
+            renderRouteProgress(routeMode, batchResult, onStationClick);
+
+            // Render each card in the batch
+            enriched.forEach(record => {
+                const card = createCard(record, maps);
+                carousel.appendChild(card);
+                positionMapPin(card.querySelector('.map-placeholder'), record, stationCodes);
+                observeCardVisibility(card, record);
+            });
+
+            // Append end card: Metro Route or Route Complete
+            if (batchResult.isComplete) {
+                // This was the last batch — add the current metro to completed list and show completion
+                const allCompleted = [...(routeMode.completedMetros || []), batchResult.currentMetro];
+                const completeCard = createRouteCompleteCard(routeMode.routeName, allCompleted);
+                carousel.appendChild(completeCard);
+            } else {
+                // More batches to go — show Metro Route card with FROM/TO
+                const lastCard = enriched[enriched.length - 1];
+                const routePagestate = {
+                    NearestMetro2_Destination: batchResult.nextMetro,
+                    PlaceOfInterestName2_Destination: `Next station: ${batchResult.nextMetro}`
+                };
+                const { card: routeCard, path: routePath } = createRouteCard(
+                    lastCard, maps, stationCodes, routePagestate
+                );
+
+                // Preload MetroAnimation images at idle time if this route uses Line 2
+                const preloadUsesLine2 = routePath && routePath.some(p => p.line === 'Line 2');
+                if (preloadUsesLine2) {
+                    const ps = buildMetroPagestate(lastCard.NearestMetro, batchResult.nextMetro, routePath);
+                    let preloadDep = null;
+                    if (ps.RouteLine1 === 'Line 2')      preloadDep = ps.NearestMetro1;
+                    else if (ps.RouteLine2 === 'Line 2') preloadDep = ps.TransferAtStation1;
+                    else if (ps.RouteLine3 === 'Line 2') preloadDep = ps.TransferAtStation2;
+                    const preloadArr = [ps.TransferAtStation1, ps.TransferAtStation2, ps.NearestMetro2]
+                        .find(s => s && s !== 'None' && s !== preloadDep) || null;
+                    scheduleMetroImagePreload(preloadDep, preloadArr);
+                }
+
+                // Override the "Let's Go" button to advance to next batch
+                const letsGoBtn = routeCard.querySelector('.btn-lets-go');
+                letsGoBtn.href = '#';
+                letsGoBtn.textContent = "Let's Go \u2192";
+                letsGoBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    letsGoBtn.textContent = 'Loading…';
+                    letsGoBtn.style.pointerEvents = 'none';
+
+                    const updatedState = {
+                        active: true,
+                        routeName: routeMode.routeName,
+                        nextWordID: batchResult.nextWordID,
+                        completedMetros: [...(routeMode.completedMetros || []), batchResult.currentMetro],
+                        completedStartWordIDs: [...(routeMode.completedStartWordIDs || []), batchResult.batch[0].WordID],
+                    };
+                    await saveRouteMode(updatedState);
+
+                    // If the route crosses Line 2, divert through the animation page
+                    const usesLine2 = routePath && routePath.some(p => p.line === 'Line 2');
+                    if (usesLine2) {
+                        const pagestate = buildMetroPagestate(lastCard.NearestMetro, batchResult.nextMetro, routePath);
+
+                        // Mirror MetroAnimation's own logic to identify which stations to show stats for
+                        let departureStn = null;
+                        if (pagestate.RouteLine1 === 'Line 2') departureStn = pagestate.NearestMetro1;
+                        else if (pagestate.RouteLine2 === 'Line 2') departureStn = pagestate.TransferAtStation1;
+                        else if (pagestate.RouteLine3 === 'Line 2') departureStn = pagestate.TransferAtStation2;
+                        const arrivalCandidates = [pagestate.TransferAtStation1, pagestate.TransferAtStation2, pagestate.NearestMetro2];
+                        const arrivalStn = arrivalCandidates.find(s => s && s !== 'None' && s !== departureStn) || null;
+
+                        const stats = await computeAnimationStats(departureStn, arrivalStn);
+                        localStorage.setItem('metro_animation_state', JSON.stringify({ pagestate, stats }));
+                        window.location.href = '../MetroAnimation/index.html';
+                        return;
+                    }
+
+                    // Normal path — re-render next batch in-place
+                    await loadRouteBatch(updatedState, maps, stationCodes);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+
+                carousel.appendChild(routeCard);
+                if (routePath) {
+                    positionRouteMapPins(routeCard.querySelector('.map-placeholder'), routePath, stationCodes);
+                }
+            }
+        }
+
+        // ─── Word Game Mode ──────────────────────────────────────────────────────
+
+        async function loadWordGameCards(gameState, maps, stationCodes) {
+            const carousel = document.querySelector('.card-carousel');
+            carousel.innerHTML = '';
+
+            const records = await getWordGameCards(gameState.selectedMetro);
+            const enriched = await enrichRecords(records);
+
+            let localCorrect = gameState.correctCount || 0;
+            let localIncorrect = gameState.incorrectCount || 0;
+            let localMetroVisits = gameState.sessionMetroVisits || 0;
+            let localHelpCount = gameState.helpCount || 0;
+
+            // All cards on this page load are counted as seen immediately
+            await Promise.all(enriched.map(record => {
+                const newSeenQty = (parseInt(record.WordSeenQty) || 0) + 1;
+                record.WordSeenQty = String(newSeenQty);
+                return updateProgress(record.WordID, { WordSeenQty: newSeenQty });
+            }));
+            let localCardsSeen = (gameState.sessionCardsSeen || 0) + enriched.length;
+
+            // Tracks which cards have already triggered a MetroVisitsQty increment this session.
+            const countedThisSession = new Set();
+            // Station visit is counted once per loadWordGameCards call, not once per card seen.
+            let stationVisitCounted = false;
+
+            enriched.forEach(record => {
+                const card = createCard(record, maps);
+
+                // Inject "Submit Word" button below the complete button
+                const completeBtn = card.querySelector('.btn-complete');
+
+                const resultMsg = document.createElement('div');
+                resultMsg.className = 'game-result-msg';
+
+                const submitBtn = document.createElement('button');
+                submitBtn.className = 'btn-submit-word';
+                submitBtn.textContent = 'Submit Word';
+
+                // Insert after the complete button: submitBtn then resultMsg
+                completeBtn.insertAdjacentElement('afterend', submitBtn);
+                submitBtn.insertAdjacentElement('afterend', resultMsg);
+
+                // Check if already submitted
+                if (record.WordGameWordCompleted === '1') {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Already Submitted';
+                    if (record.WordGameScore > 0) {
+                        resultMsg.textContent = 'Correct! This is a game word!';
+                        resultMsg.className = 'game-result-msg correct';
+                    } else {
+                        resultMsg.textContent = 'Not the word you are looking for.';
+                        resultMsg.className = 'game-result-msg incorrect';
+                    }
+                }
+
+                submitBtn.addEventListener('click', async () => {
+                    submitBtn.disabled = true;
+
+                    const hasGameData = record.WordGameName && record.WordGameName !== '';
+                    if (hasGameData) {
+                        localCorrect++;
+                        resultMsg.textContent = 'Correct! This is a game word!';
+                        resultMsg.className = 'game-result-msg correct';
+                        await updateProgress(record.WordID, { WordGameScore: 1, WordGameWordCompleted: '1' });
+                        submitBtn.textContent = 'Correct!';
+                    } else {
+                        localIncorrect++;
+                        const clue = (record.WordGameClue || '').trim();
+                        resultMsg.textContent = clue
+                            ? `Not quite. Clue: ${clue}`
+                            : 'Not the word you are looking for.';
+                        resultMsg.className = 'game-result-msg incorrect';
+                        await updateProgress(record.WordID, { WordGameScore: 0, WordGameWordCompleted: '1' });
+                        submitBtn.textContent = 'Submitted';
+                    }
+
+                    // Update game state in IndexedDB
+                    const updatedState = {
+                        ...gameState,
+                        correctCount: localCorrect,
+                        incorrectCount: localIncorrect,
+                        sessionCardsSeen: localCardsSeen,
+                        sessionMetroVisits: localMetroVisits,
+                        helpCount: localHelpCount,
+                    };
+                    await saveWordGame(updatedState);
+                    gameState = updatedState;
+
+                    // Live-update summary card
+                    updateGameSummaryCard(localCorrect, localIncorrect, localCardsSeen, localMetroVisits, localHelpCount);
+                });
+
+                carousel.appendChild(card);
+                positionMapPin(card.querySelector('.map-placeholder'), record, stationCodes);
+                observeWordGameCardVisibility(card, record, async () => {
+                    // Gate MetroVisitsQty: only once per card per session
+                    if (countedThisSession.has(record.WordID)) return;
+                    countedThisSession.add(record.WordID);
+                    if (!stationVisitCounted) {
+                        stationVisitCounted = true;
+                        localMetroVisits++;
+                    }
+                    const newMetroVisits = (parseInt(record.MetroVisitsQty) || 0) + 1;
+                    record.MetroVisitsQty = newMetroVisits;
+                    updateProgress(record.WordID, { MetroVisitsQty: newMetroVisits });
+                    const updatedState = {
+                        ...gameState,
+                        sessionCardsSeen: localCardsSeen,
+                        sessionMetroVisits: localMetroVisits,
+                        helpCount: localHelpCount,
+                    };
+                    await saveWordGame(updatedState);
+                    gameState = updatedState;
+                    updateGameSummaryCard(localCorrect, localIncorrect, localCardsSeen, localMetroVisits, localHelpCount);
+                });
+            });
+
+            // Persist the pre-counted session totals immediately so they survive navigation
+            const stateAfterLoad = {
+                ...gameState,
+                sessionCardsSeen: localCardsSeen,
+                sessionMetroVisits: localMetroVisits,
+            };
+            await saveWordGame(stateAfterLoad);
+            gameState = stateAfterLoad;
+
+            // Compute distances from current metro to each game word's metro (sorted ascending)
+            let distances = [];
+            const gameWords = await getAllWordGameCards();
+            const totalGameWords = gameWords.length;
+            const currentRecord = records[0];
+            if (currentRecord) {
+                const currentStation = stationCodes[String(currentRecord.NearestMetroCode)];
+                if (currentStation) {
+                    distances = gameWords
+                        .map(r => {
+                            const station = stationCodes[String(r.NearestMetroCode)];
+                            if (!station) return null;
+                            return haversineKm(currentStation.lat, currentStation.lng, station.lat, station.lng);
+                        })
+                        .filter(d => d !== null)
+                        .sort((a, b) => a - b);
+                }
+            }
+
+            // Append game summary card at the end
+            const summaryCard = createGameSummaryCard(localCorrect, localIncorrect, localCardsSeen, localMetroVisits, distances, localHelpCount, totalGameWords);
+            carousel.appendChild(summaryCard);
+
+            // Wire "Get Help !" button — show distances and persist help count
+            const helpBtn = summaryCard.querySelector('#game-help-btn');
+            const distancesSection = summaryCard.querySelector('#game-distances-section');
+            if (helpBtn && distancesSection) {
+                helpBtn.addEventListener('click', async () => {
+                    distancesSection.style.display = '';
+                    helpBtn.style.display = 'none';
+                    localHelpCount++;
+                    const updatedState = {
+                        ...gameState,
+                        correctCount: localCorrect,
+                        incorrectCount: localIncorrect,
+                        sessionCardsSeen: localCardsSeen,
+                        sessionMetroVisits: localMetroVisits,
+                        helpCount: localHelpCount,
+                    };
+                    await saveWordGame(updatedState);
+                    gameState = updatedState;
+                    updateGameSummaryCard(localCorrect, localIncorrect, localCardsSeen, localMetroVisits, localHelpCount);
+                });
+            }
+        }
+
+        function createGameSummaryCard(correctCount, incorrectCount, cardsSeen, metroVisits, distances = [], helpCount = 0, totalGameWords = 0) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.id = 'game-summary-card';
+            const distancesInnerHTML = distances.length > 0
+                ? `<div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:8px;">Distance to correct words:</div>
+                   <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:10px;">
+                       ${distances.map(d => `<span style="background:var(--card-bg);border:1px solid var(--border-color);border-radius:20px;padding:4px 14px;font-size:0.9rem;font-weight:600;">${d.toFixed(1)} km</span>`).join('')}
+                   </div>`
+                : '';
+            const isComplete = totalGameWords > 0 && correctCount >= totalGameWords;
+            card.innerHTML = `
+                <div class="card-body" style="text-align:center;padding:40px 20px;">
+                    <h2 class="heading-line" style="color: var(--accent);">Word Game Summary</h2>
+                    <div id="game-complete-msg" style="display:${isComplete ? 'block' : 'none'};margin-bottom:20px;padding:16px 20px;background:linear-gradient(135deg,#22c55e22,#16a34a22);border:1px solid #22c55e55;border-radius:12px;">
+                        <div style="font-size:1.5em;font-weight:800;color:#22c55e;margin-bottom:4px;">Game Complete!</div>
+                        <div style="font-size:0.95rem;color:var(--text-dim);">You found all ${totalGameWords} game words. Well done!</div>
+                    </div>
+                    <div style="display:flex;justify-content:center;gap:30px;margin:24px 0;">
+                        <div>
+                            <div style="font-size:2em;font-weight:800;color:#22c55e;" id="game-correct-count">${correctCount}</div>
+                            <div style="font-size:0.85rem;color:var(--text-dim);">Correct</div>
+                        </div>
+                        <div>
+                            <div style="font-size:2em;font-weight:800;color:#ef4444;" id="game-incorrect-count">${incorrectCount}</div>
+                            <div style="font-size:0.85rem;color:var(--text-dim);">Incorrect</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;justify-content:center;gap:30px;margin:0 0 24px;">
+                        <div>
+                            <div style="font-size:2em;font-weight:800;color:var(--accent);" id="game-cards-seen">${cardsSeen}</div>
+                            <div style="font-size:0.85rem;color:var(--text-dim);">Cards Seen</div>
+                        </div>
+                        <div>
+                            <div style="font-size:2em;font-weight:800;color:var(--accent);" id="game-metro-visits">${metroVisits}</div>
+                            <div style="font-size:0.85rem;color:var(--text-dim);">Metro Visits</div>
+                        </div>
+                        <div>
+                            <div style="font-size:2em;font-weight:800;color:#f59e0b;" id="game-help-count">${helpCount}</div>
+                            <div style="font-size:0.85rem;color:var(--text-dim);">Help Used</div>
+                        </div>
+                    </div>
+                    ${distances.length > 0 ? `
+                    <button id="game-help-btn" style="margin-bottom:16px;padding:10px 24px;border:none;border-radius:8px;background:#f59e0b;color:white;font-weight:600;font-size:0.9rem;cursor:pointer;">Get Help !</button>
+                    <div id="game-distances-section" style="display:none;margin:0 0 20px;text-align:center;">
+                        ${distancesInnerHTML}
+                    </div>` : ''}
+                    ${buildBackButtons()}
+                </div>
+            `;
+            card.dataset.totalGameWords = totalGameWords;
+            return card;
+        }
+
+        function updateGameSummaryCard(correctCount, incorrectCount, cardsSeen, metroVisits, helpCount) {
+            const correctEl = document.getElementById('game-correct-count');
+            const incorrectEl = document.getElementById('game-incorrect-count');
+            const cardsSeenEl = document.getElementById('game-cards-seen');
+            const metroVisitsEl = document.getElementById('game-metro-visits');
+            const helpCountEl = document.getElementById('game-help-count');
+            if (correctEl) correctEl.textContent = correctCount;
+            if (incorrectEl) incorrectEl.textContent = incorrectCount;
+            if (cardsSeenEl) cardsSeenEl.textContent = cardsSeen;
+            if (metroVisitsEl) metroVisitsEl.textContent = metroVisits;
+            if (helpCountEl) helpCountEl.textContent = helpCount;
+
+            const completeMsg = document.getElementById('game-complete-msg');
+            if (completeMsg) {
+                const summaryCard = document.getElementById('game-summary-card');
+                const totalGameWords = summaryCard ? Number(summaryCard.dataset.totalGameWords) : 0;
+                completeMsg.style.display = (totalGameWords > 0 && correctCount >= totalGameWords) ? 'block' : 'none';
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const current = body.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', next);
+            localStorage.setItem('theme_preference', next);
+        }
+        // Expose to global scope — required because the button uses onclick="toggleTheme()"
+        // and module scripts do not expose functions to window automatically.
+        window.toggleTheme = toggleTheme;
+
+        // Restore saved theme
+        document.body.setAttribute('data-theme', localStorage.getItem('theme_preference') || 'dark');
+
+        window.addEventListener('storage', function (e) {
+          if (e.key === 'theme_preference') {
+            document.body.setAttribute('data-theme', e.newValue || 'dark');
+          }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('../sw.js').catch(() => {});
+                }
+
+                await bootstrap();
+
+                const [routeMode, wordGameMode, filters, maps, stationCodes, pagestate] = await Promise.all([
+                    getRouteMode(),
+                    getWordGame(),
+                    getFilters(),
+                    fetch('js/poi_maps.json').then(r => r.json()),
+                    fetch('js/station_codes.json').then(r => r.json()),
+                    fetch('js/pagestate.json').then(r => r.json())
+                ]);
+
+                if (wordGameMode.active) {
+                    // ─── Word Game Mode ────────────────────────────────────
+                    await loadWordGameCards(wordGameMode, maps, stationCodes);
+                } else if (routeMode.active) {
+                    // ─── Route Mode ────────────────────────────────────────
+                    await loadRouteBatch(routeMode, maps, stationCodes);
+                } else {
+                    // ─── Normal Filter Mode ────────────────────────────────
+                    const records = await getFilteredFlashcards(filters);
+                    const enrichedRecords = await enrichRecords(records);
+
+                    // Count all cards on this page load as seen
+                    await Promise.all(enrichedRecords.map(record => {
+                        const newSeenQty = (parseInt(record.WordSeenQty) || 0) + 1;
+                        record.WordSeenQty = String(newSeenQty);
+                        return updateProgress(record.WordID, { WordSeenQty: newSeenQty });
+                    }));
+
+                    // renderCards expects a keyed object { id: record, ... }
+                    const dataObj = Object.fromEntries(enrichedRecords.map(r => [r.WordID, r]));
+                    renderCards(dataObj, maps, stationCodes);
+                }
+            } catch (err) {
+                console.error('Failed to load flashcard data:', err);
+            }
+        });
+    </script>
+
+<nav class="bottom-nav">
+    <a href="../index.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>Home</span>
+    </a>
+    <a href="index.html" class="nav-item active">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="14" rx="2"></rect>
+            <rect x="5" y="1" width="14" height="4" rx="1" opacity="0.5"></rect>
+            <line x1="8" y1="10" x2="16" y2="10"></line>
+            <line x1="8" y1="14" x2="13" y2="14"></line>
+        </svg>
+        <span>Flashcards</span>
+    </a>
+    <a href="../ProgressDashboard/index.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        <span>Progress Dashboard</span>
+    </a>
+    <a href="../settings.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span>Settings</span>
+    </a>
+</nav>
+<script type="module">
+    import { initBrand } from '../brand_loader.js';
+    initBrand();
+</script>
+</body>
+</html>

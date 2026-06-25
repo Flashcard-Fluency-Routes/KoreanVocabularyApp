@@ -1,0 +1,44 @@
+[
+  { "station": "Dongmyo", "lines": ["Line 1", "Line 6"] },
+  { "station": "Dongdaemun", "lines": ["Line 1", "Line 4"] },
+  { "station": "Jongno 3-ga", "lines": ["Line 1", "Line 3", "Line 5"] },
+  { "station": "City Hall", "lines": ["Line 1", "Line 2"] },
+  { "station": "Seoul Station", "lines": ["Line 1", "Line 4"] },
+  { "station": "Noryangjin", "lines": ["Line 1", "Line 9"] },
+  { "station": "Singil", "lines": ["Line 1", "Line 5"] },
+  { "station": "Sindorim", "lines": ["Line 1", "Line 2"] },
+  { "station": "Onsu", "lines": ["Line 1", "Line 7"] },
+
+  { "station": "Euljiro 4-ga", "lines": ["Line 2", "Line 5"] },
+  { "station": "Dongdaemun History & Culture Park", "lines": ["Line 2", "Line 4", "Line 5"] },
+  { "station": "Sindang", "lines": ["Line 2", "Line 6"] },
+  { "station": "Wangsimni", "lines": ["Line 2", "Line 5"] },
+  { "station": "Konkuk University", "lines": ["Line 2", "Line 7"] },
+  { "station": "Jamsil", "lines": ["Line 2", "Line 8"] },
+  { "station": "Sports Complex", "lines": ["Line 2", "Line 9"] },
+  { "station": "Seoul National University Court", "lines": ["Line 2", "Line 3"] },
+  { "station": "Nambu Bus Terminal", "lines": ["Line 2", "Line 3"] },
+  { "station": "Sadang", "lines": ["Line 2", "Line 4"] },
+  { "station": "Daerim", "lines": ["Line 2", "Line 7"] },
+  { "station": "Yeongdeungpo-gu Office", "lines": ["Line 2", "Line 5"] },
+  { "station": "Dangsan", "lines": ["Line 2", "Line 9"] },
+  { "station": "Hapjeong", "lines": ["Line 2", "Line 6"] },
+  { "station": "Chungjeongno", "lines": ["Line 2", "Line 5"] },
+  { "station": "Euljiro 3-ga", "lines": ["Line 2", "Line 3"] },
+
+  { "station": "Chungmuro", "lines": ["Line 3", "Line 4"] },
+  { "station": "Yaksu", "lines": ["Line 3", "Line 6"] },
+  { "station": "Express Bus Terminal", "lines": ["Line 3", "Line 7", "Line 9"] },
+
+  { "station": "Samgakji", "lines": ["Line 4", "Line 6"] },
+  { "station": "Dongjak", "lines": ["Line 4", "Line 9"] },
+  { "station": "Isu", "lines": ["Line 4", "Line 7"] },
+
+  { "station": "Gongdeok", "lines": ["Line 5", "Line 6"] },
+  { "station": "Cheonggu", "lines": ["Line 5", "Line 6"] },
+  { "station": "Gunja", "lines": ["Line 5", "Line 7"] },
+  { "station": "Cheonho", "lines": ["Line 5", "Line 8"] },
+  { "station": "Olympic Park", "lines": ["Line 5", "Line 9"] },
+
+  { "station": "Seokchon", "lines": ["Line 8", "Line 9"] }
+]

@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metro Animation</title>
+  <link rel="icon" href="../brand/favicon.png">
+  <style>
+    :root {
+      --bg-color: #111;
+      --text-color: #fff;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #111;
+      --text-color: #fff;
+    }
+
+    [data-theme="light"] {
+      --bg-color: #eee;
+      --text-color: #000;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg-color);
+      transition: background-color 0.3s ease;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #map-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    #map-container {
+      position: relative;
+      flex-shrink: 0;
+      width: 831px;
+      height: 1478px;
+      transform-origin: top center;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+    }
+
+    #map-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .vehicle {
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      transform-origin: center center;
+      will-change: transform;
+      left: -9999px;
+      top: -9999px;
+    }
+
+    .vehicle-label {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      pointer-events: none;
+    }
+
+    .vehicle-label span {
+      background: rgba(0, 0, 0, 0.65);
+      color: #fff;
+      font-family: Arial, sans-serif;
+      font-size: 22px;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      line-height: 1.2;
+    }
+
+    #arrival-section {
+      width: 100%;
+      max-width: 600px;
+      padding: 28px 16px 48px;
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #arrival-section h1,
+    #arrival-heading-top {
+      font-family: Arial, sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    #arrival-heading-top {
+      width: 100%;
+      max-width: 600px;
+      color: var(--text-color);
+      padding: 20px 16px 0;
+      text-align: left;
+    }
+
+    .stats-section-heading {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #666;
+      margin: 20px 0 8px;
+    }
+
+    .data-card {
+      background: #1e1e1e;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .arrival-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: Arial, sans-serif;
+      table-layout: fixed;
+    }
+
+    .arrival-table th {
+      background: #2a2a2a;
+      color: #999;
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1px solid #333;
+    }
+
+    .arrival-table td {
+      padding: 14px 16px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .arrival-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    #route-message {
+      color: var(--text-color);
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      margin-top: 24px;
+      margin-bottom: 16px;
+      line-height: 1.5;
+      text-align: left;
+    }
+
+    #btn-next {
+      background: #4a9eff;
+      color: #fff;
+      border: none;
+      padding: 12px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+      transition: background 0.2s;
+    }
+
+    #btn-next:hover {
+      background: #357ace;
+    }
+
+    #btn-next:active {
+      background: #2962ab;
+    }
+
+    body {
+      padding-bottom: 60px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: #1e293b;
+      border-top: 1px solid #334155;
+      padding: 8px 0 10px;
+      display: flex;
+      justify-content: space-around;
+      z-index: 9;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.72rem;
+      padding: 4px 12px;
+      border-radius: 8px;
+      transition: color 0.2s;
+    }
+
+    .nav-item:hover {
+      color: #f8fafc;
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+    }
+
+  </style>
+</head>
+<body data-theme="dark">
+
+  <h1 id="arrival-heading-top" style="text-align: center;">Arriving at Station :</h1>
+
+  <div id="map-wrapper">
+  <div id="map-container">
+    <img id="map-img" src="map.png" alt="map" />
+    <img id="vehicle1" class="vehicle" data-brand="vehicle-1" alt="vehicle 1" />
+    <img id="vehicle2" class="vehicle" data-brand="vehicle-2" alt="vehicle 2" />
+    <img id="vehicle3" class="vehicle" data-brand="vehicle-3" alt="vehicle 3" />
+    <div id="label1" class="vehicle-label">
+      <span id="label1-line1"></span>
+      <span id="label1-line2"></span>
+    </div>
+    <div id="label2" class="vehicle-label">
+      <span id="label2-line1"></span>
+      <span id="label2-line2"></span>
+    </div>
+    <div id="label3" class="vehicle-label">
+      <span id="label3-line1"></span>
+      <span id="label3-line2"></span>
+    </div>
+  </div>
+  </div>
+
+  <section id="arrival-section">
+    <h1 id="arrival-heading">Arriving at Station :</h1>
+
+    <h2 class="stats-section-heading">Station Statistics</h2>
+
+    <div class="data-card">
+      <table id="table-prior-arrivals" class="arrival-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="data-card">
+      <table id="table-venues" class="arrival-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <h2 class="stats-section-heading">App Statistics</h2>
+
+    <div class="data-card">
+      <table id="table-words" class="arrival-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <p id="route-message" style="display:none;"></p>
+    <button id="btn-next">Next</button>
+  </section>
+
+  <script>
+    // ─────────────────────────────────────────────────────────────────────────
+    // ARRIVAL DATA — loaded from separate JSON files, cached in localStorage
+    // ─────────────────────────────────────────────────────────────────────────
+    async function loadArrivalData() {
+      try {
+        const storedRaw = localStorage.getItem('metro_animation_state');
+
+        const [tsResp, rtResp, l2Resp, smResp] = await Promise.all([
+          fetch('js/transfer_stations.json', { cache: 'no-store' }),
+          fetch('js/routes.json',            { cache: 'no-store' }),
+          fetch('js/line2stations.json',     { cache: 'no-store' }),
+          fetch('js/station_maps.json',      { cache: 'no-store' }),
+        ]);
+
+        const tsText = await tsResp.text();
+        transferStations  = JSON.parse(tsText.replace(/,\s*([}\]])/g, '$1'));
+        stationRoutes     = await rtResp.json();
+        line2StationsList = (await l2Resp.json())[0]['Line 2'];
+        stationMaps       = await smResp.json();
+
+        if (storedRaw) {
+          // Real data passed from FlashCards "Let's Go"
+          localStorage.removeItem('metro_animation_state');
+          const stored = JSON.parse(storedRaw);
+          pageState         = stored.pagestate;
+          procCalcInstances = stored.stats || [];
+        } else {
+          // Fallback: standalone / mock testing via JSON files
+          const [psResp, pcResp] = await Promise.all([
+            fetch('js/pagestate.json',             { cache: 'no-store' }),
+            fetch('js/processedcalculations.json', { cache: 'no-store' }),
+          ]);
+          const psText = await psResp.text();
+          const pcText = await pcResp.text();
+          pageState         = JSON.parse(psText.replace(/,\s*([}\]])/g, '$1'))[0];
+          procCalcInstances = JSON.parse(pcText.replace(/,\s*([}\]])/g, '$1'));
+        }
+      } catch (e) {
+        console.error('Failed to load data:', e);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // MAP DIMENSIONS — update if your map image is a different resolution
+    // ─────────────────────────────────────────────────────────────────────────
+    const MAP_W = 831;
+    const MAP_H = 1478;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ROUTE DEFINITIONS
+    // Routes are loaded from js/routes.json, keyed by station name.
+    // These fallback arrays are used when a station has no entry in routes.json.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    const FALLBACK_VEHICLE_1_ROUTE_1 = [
+      { x:    0, y:  560 },
+      { x:  270, y:  580 },
+      { x:  500, y:  700 },
+      { x:  570, y:  900 },
+      { x:  610, y: 1420 },
+    ];
+    const FALLBACK_VEHICLE_1_ROUTE_2 = [
+      { x:  610, y: 1420 },
+      { x: 1080, y: 1420 },
+      { x:  900, y:  650 },
+      { x:  950, y:  680 },
+      { x: 1000, y:  700 },
+    ];
+
+    const FALLBACK_VEHICLE_2_ROUTE_1 = [
+      { x:  540, y:    0 },
+      { x:  560, y:  480 },
+      { x:  300, y:  960 },
+    ];
+    const FALLBACK_VEHICLE_2_ROUTE_2 = [
+      { x:  300, y:  960 },
+      { x:  580, y: 1440 },
+      { x:  540, y: 1920 },
+    ];
+
+    const FALLBACK_VEHICLE_3_ROUTE_1 = [
+      { x:    0, y: 1350 },
+      { x:  540, y: 1350 },
+    ];
+    const FALLBACK_VEHICLE_3_ROUTE_2 = [
+      { x:  540, y: 1350 },
+      { x: 1900, y: 1350 },
+    ];
+
+    // Returns the [route1, route2] pair for a given vehicle index (0-based) and station name.
+    // Falls back to the hardcoded defaults when the station is not in routes.json.
+    function getRoutesForStation(stationName, vehicleIndex) {
+      const fallbacks = [
+        [FALLBACK_VEHICLE_1_ROUTE_1, FALLBACK_VEHICLE_1_ROUTE_2],
+        [FALLBACK_VEHICLE_2_ROUTE_1, FALLBACK_VEHICLE_2_ROUTE_2],
+        [FALLBACK_VEHICLE_3_ROUTE_1, FALLBACK_VEHICLE_3_ROUTE_2],
+      ];
+      const keys = ['vehicle1', 'vehicle2', 'vehicle3'];
+      const entry = stationRoutes && stationRoutes[stationName] && stationRoutes[stationName][keys[vehicleIndex]];
+      if (entry) return [entry.route1, entry.route2];
+      return fallbacks[vehicleIndex];
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SPEED  (map-pixels per second — independent of display scale)
+    // ─────────────────────────────────────────────────────────────────────────
+    const SPEED_VEHICLE_1 = 180;
+    const SPEED_VEHICLE_2 = 190;
+    const SPEED_VEHICLE_3 = 250;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SPRITE ANGLE OFFSET
+    // atan2 assumes 0° = facing RIGHT. If your sprite image faces UP, set -90.
+    // If it faces DOWN, set 90. If it faces LEFT, set 180.
+    // ─────────────────────────────────────────────────────────────────────────
+    const SPRITE_ANGLE_OFFSET_V1 = -90;
+    const SPRITE_ANGLE_OFFSET_V2 = -90;
+    const SPRITE_ANGLE_OFFSET_V3 = -90;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // VEHICLE LABELS — update these values to change what is displayed.
+    // Set the corresponding SHOW_ bool to false to hide that line.
+    // ─────────────────────────────────────────────────────────────────────────
+    let V1_LABEL_1 = 'Line 2';
+    let V1_LABEL_2 = 'V1 Label 2';
+    let V2_LABEL_1 = 'Line 3';
+    let V2_LABEL_2 = 'V2 Label 2';
+    let V3_LABEL_1 = 'Line 4';
+    let V3_LABEL_2 = 'V3 Label 2';
+
+    let SHOW_V1_LABEL_1 = true;
+    let SHOW_V1_LABEL_2 = false;
+    let SHOW_V2_LABEL_1 = true;
+    let SHOW_V2_LABEL_2 = false;
+    let SHOW_V3_LABEL_1 = true;
+    let SHOW_V3_LABEL_2 = false;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // MULTI-INSTANCE STATE
+    // ─────────────────────────────────────────────────────────────────────────
+    let transferStations = [];
+    let pageState = {};
+    let procCalcInstances = [];
+    let stationRoutes = {};
+    let line2StationsList = [];
+    let stationMaps = {};
+    let line2Departure = null;
+    let line2Arrival = null;
+    let currentInstance = 1;
+    let animationComplete = false;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SETUP
+    // ─────────────────────────────────────────────────────────────────────────
+    const container  = document.getElementById('map-container');
+    const mapWrapper = document.getElementById('map-wrapper');
+    const vehicle1El = document.getElementById('vehicle1');
+    const vehicle2El = document.getElementById('vehicle2');
+    const vehicle3El = document.getElementById('vehicle3');
+    const label1El   = document.getElementById('label1');
+    const label2El   = document.getElementById('label2');
+    const label3El   = document.getElementById('label3');
+
+    // Populate label text and hide spans whose SHOW_ bool is false
+    function initLabels() {
+      const cfg = [
+        { labelEl: label1El, line1El: document.getElementById('label1-line1'), line2El: document.getElementById('label1-line2'),
+          line1Val: V1_LABEL_1, line2Val: V1_LABEL_2, showLine1: SHOW_V1_LABEL_1, showLine2: SHOW_V1_LABEL_2 },
+        { labelEl: label2El, line1El: document.getElementById('label2-line1'), line2El: document.getElementById('label2-line2'),
+          line1Val: V2_LABEL_1, line2Val: V2_LABEL_2, showLine1: SHOW_V2_LABEL_1, showLine2: SHOW_V2_LABEL_2 },
+        { labelEl: label3El, line1El: document.getElementById('label3-line1'), line2El: document.getElementById('label3-line2'),
+          line1Val: V3_LABEL_1, line2Val: V3_LABEL_2, showLine1: SHOW_V3_LABEL_1, showLine2: SHOW_V3_LABEL_2 },
+      ];
+      for (const c of cfg) {
+        // Reset display before applying visibility
+        c.line1El.style.display = '';
+        c.line2El.style.display = '';
+        c.labelEl.style.display = '';
+
+        if (c.showLine1) { c.line1El.textContent = c.line1Val; }
+        else             { c.line1El.style.display = 'none'; }
+        if (c.showLine2) { c.line2El.textContent = c.line2Val; }
+        else             { c.line2El.style.display = 'none'; }
+        // Hide the whole label div if nothing is shown
+        if (!c.showLine1 && !c.showLine2) c.labelEl.style.display = 'none';
+      }
+    }
+
+    // Scale the map container to fit the viewport width; wrapper height tracks scaled size
+    function fitMap() {
+      const scale = Math.min(window.innerWidth / MAP_W, window.innerHeight / MAP_H);
+      container.style.transform = `scale(${scale})`;
+      mapWrapper.style.height   = `${MAP_H * scale}px`;
+    }
+    window.addEventListener('resize', fitMap);
+    fitMap();
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // STATION LOOKUP & VEHICLE CONFIGURATION
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // Returns the lines array for a station, or [] if not found
+    function getStationLines(stationName) {
+      const entry = transferStations.find(s => s.station === stationName);
+      return entry ? entry.lines : [];
+    }
+
+    // Show/hide vehicles based on how many lines the station has
+    // If station not found, show only Vehicle 1
+    function configureVehiclesForStation(stationName) {
+      const lines = getStationLines(stationName);
+      const vehicleCount = lines.length > 0 ? lines.length : 1;
+
+      for (let i = 0; i < vehicles.length; i++) {
+        const v = vehicles[i];
+        const shouldShow = i < vehicleCount;
+        v.el.style.display = shouldShow ? '' : 'none';
+        v.labelEl.style.display = shouldShow ? '' : 'none';
+        if (!shouldShow) v.finished = true;
+      }
+    }
+
+    // Set vehicle labels to the lines at the current station.
+    // V1 gets Line 2 if the station has it; otherwise lines are assigned in order.
+    function updateLabelsForStation(stationName) {
+      const lines = getStationLines(stationName);
+
+      if (lines.includes('Line 2')) {
+        const otherLines = lines.filter(l => l !== 'Line 2');
+
+        V1_LABEL_1 = 'Line 2';
+        SHOW_V1_LABEL_1 = true;
+
+        V2_LABEL_1 = otherLines.length >= 1 ? otherLines[0] : '';
+        SHOW_V2_LABEL_1 = otherLines.length >= 1;
+
+        V3_LABEL_1 = otherLines.length >= 2 ? otherLines[1] : '';
+        SHOW_V3_LABEL_1 = otherLines.length >= 2;
+      } else {
+        V1_LABEL_1 = lines.length >= 1 ? lines[0] : '';
+        SHOW_V1_LABEL_1 = lines.length >= 1;
+
+        V2_LABEL_1 = lines.length >= 2 ? lines[1] : '';
+        SHOW_V2_LABEL_1 = lines.length >= 2;
+
+        V3_LABEL_1 = lines.length >= 3 ? lines[2] : '';
+        SHOW_V3_LABEL_1 = lines.length >= 3;
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // LINE 2 DEPARTURE / ARRIVAL LOGIC
+    // ─────────────────────────────────────────────────────────────────────────
+    function isLine2Station(stationName) {
+      return line2StationsList.includes(stationName);
+    }
+
+    function determineLine2Departure() {
+      if (pageState.RouteLine1 === 'Line 2' && isLine2Station(pageState.NearestMetro1))
+        return pageState.NearestMetro1;
+      if (pageState.RouteLine2 === 'Line 2' && isLine2Station(pageState.TransferAtStation1))
+        return pageState.TransferAtStation1;
+      if (pageState.RouteLine3 === 'Line 2' && isLine2Station(pageState.TransferAtStation2))
+        return pageState.TransferAtStation2;
+      return null;
+    }
+
+    function determineLine2Arrival(departureStation) {
+      if (!departureStation) return null;
+      const candidates = [
+        pageState.TransferAtStation1,
+        pageState.TransferAtStation2,
+        pageState.NearestMetro2,
+      ];
+      for (const c of candidates) {
+        if (c && c !== 'None' && c !== departureStation && isLine2Station(c))
+          return c;
+      }
+      return null;
+    }
+
+    function computeLine2Stations() {
+      line2Departure = determineLine2Departure();
+      line2Arrival = determineLine2Arrival(line2Departure);
+    }
+
+    // Reset all vehicles to initial animation state
+    function resetVehicles() {
+      for (const v of vehicles) {
+        v.routeIndex = 0;
+        v.segIndex = 0;
+        v.segT = 0;
+        v.finished = false;
+        v.pausing = false;
+        v.pauseTimer = 0;
+        v.el.style.left = '-9999px';
+        v.el.style.top = '-9999px';
+        v.labelEl.style.left = '-9999px';
+        v.labelEl.style.top = '-9999px';
+      }
+      lastTime = null;
+      animationComplete = false;
+    }
+
+    // Build a single data object for a given instance number
+    function getInstanceData(instanceNum) {
+      let stationName;
+      if (instanceNum === 1) {
+        stationName = line2Departure || pageState.NearestMetro1;
+      } else {
+        stationName = line2Arrival || pageState.NearestMetro2;
+      }
+      return {
+        ...pageState,
+        ...(procCalcInstances[instanceNum - 1] || {}),
+        NearestMetro: stationName,
+      };
+    }
+
+    // Called when all visible vehicles finish their animation
+    function onAnimationComplete() {
+      document.getElementById('btn-next').style.display = '';
+    }
+
+    // Swap the map background image for the given station
+    function setMapForStation(stationName) {
+      const src = stationMaps[stationName] || 'map.png';
+      document.getElementById('map-img').src = src;
+    }
+
+    // Orchestrate a full animation instance
+    function startInstance(instanceNum) {
+      currentInstance = instanceNum;
+      animationComplete = false;
+
+      const stationName = instanceNum === 1
+        ? (line2Departure || pageState.NearestMetro1)
+        : (line2Arrival || pageState.NearestMetro2);
+
+      // Swap map image for this station
+      setMapForStation(stationName);
+
+      // Apply station-specific routes from routes.json (falls back to defaults)
+      for (let i = 0; i < vehicles.length; i++) {
+        vehicles[i].routes = getRoutesForStation(stationName, i);
+      }
+
+      // Reset and configure vehicles
+      resetVehicles();
+      configureVehiclesForStation(stationName);
+      updateLabelsForStation(stationName);
+
+      initLabels();
+
+      // Update tables and headings
+      const instanceData = getInstanceData(instanceNum);
+      renderTable([instanceData]);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // NEXT BUTTON
+    // ─────────────────────────────────────────────────────────────────────────
+    document.getElementById('btn-next').addEventListener('click', () => {
+      if (!line2Arrival || currentInstance === 2) {
+        window.location.href = '../FlashCards/flashcards.html';
+      } else {
+        currentInstance = 2;
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        startInstance(2);
+      }
+    });
+
+    // Returns the number of times this page has previously displayed stationName,
+    // then increments the stored count for the next visit.
+    function getPriorArrivals(stationName) {
+      const visits = JSON.parse(localStorage.getItem('station_visits') || '{}');
+      const count = visits[stationName] || 0;
+      visits[stationName] = count + 1;
+      localStorage.setItem('station_visits', JSON.stringify(visits));
+      return count;
+    }
+
+    // Query IndexedDB for word-level completion stats (station and app-wide)
+    async function loadWordStats(stationName) {
+      const result = {
+        station: { wordsCompleted: 0, wordsNotCompleted: 0 },
+        app:     { wordsCompleted: 0, wordsNotCompleted: 0 },
+      };
+      try {
+        const db = await new Promise((resolve, reject) => {
+          const req = indexedDB.open('flashcard_app_db', 1);
+          req.onsuccess = e => resolve(e.target.result);
+          req.onerror   = () => reject(req.error);
+        });
+
+        const [allProgress, allFlashcards] = await Promise.all([
+          new Promise((resolve) => {
+            const tx  = db.transaction('user_progress', 'readonly');
+            const req = tx.objectStore('user_progress').getAll();
+            req.onsuccess = () => resolve(req.result || []);
+            req.onerror   = () => resolve([]);
+          }),
+          new Promise((resolve) => {
+            const tx  = db.transaction('flashcards', 'readonly');
+            const req = tx.objectStore('flashcards').getAll();
+            req.onsuccess = () => resolve(req.result || []);
+            req.onerror   = () => resolve([]);
+          }),
+        ]);
+
+        const progressMap = {};
+        for (const p of allProgress) progressMap[p.WordID] = p;
+
+        for (const card of allFlashcards) {
+          const prog      = progressMap[card.WordID];
+          const completed = prog && prog.WordCompleted === '1';
+
+          if (completed) result.app.wordsCompleted++;
+          else           result.app.wordsNotCompleted++;
+
+          if (card.NearestMetro === stationName && prog) {
+            if (completed) result.station.wordsCompleted++;
+            else           result.station.wordsNotCompleted++;
+          }
+        }
+        return result;
+      } catch (e) {
+        console.error('loadWordStats error:', e);
+        return result;
+      }
+    }
+
+    // Render the arrival data tables and heading from loaded data
+    async function renderTable(data) {
+      const heading    = document.getElementById('arrival-heading');
+      const headingTop = document.getElementById('arrival-heading-top');
+      const stationName = data.length > 0 ? data[0].NearestMetro : null;
+
+      if (stationName) {
+        headingTop.textContent = currentInstance === 1
+          ? 'Departing Line 2 at : ' + stationName
+          : 'Arriving Line 2 at : ' + stationName;
+        heading.textContent = 'Area information for ' + stationName;
+      }
+
+      function fillTable(tableId, headers, values) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        table.querySelector('thead').innerHTML =
+          '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+        table.querySelector('tbody').innerHTML =
+          '<tr>' + values.map(v => `<td>${v !== undefined && v !== null ? v : '—'}</td>`).join('') + '</tr>';
+      }
+
+      const priorArrivals = getPriorArrivals(stationName);
+      const wordStats     = await loadWordStats(stationName);
+
+      fillTable('table-prior-arrivals', ['Prior Arrivals'],                         [priorArrivals]);
+      fillTable('table-venues',         ['Words Completed', 'Words Not Completed'], [wordStats.station.wordsCompleted, wordStats.station.wordsNotCompleted]);
+      fillTable('table-words',          ['Words Completed', 'Words Not Completed'], [wordStats.app.wordsCompleted,     wordStats.app.wordsNotCompleted]);
+
+      // Handle route message logic
+      if (data.length > 0) {
+        const row          = data[0];
+        const startLine    = row.RouteStartLine    || '';
+        const transferLine = row.RouteTransferLine || '';
+        const endLine      = row.RouteEndLine      || '';
+        const finalStop    = row.RouteFinalStop    || '';
+        const msgEl        = document.getElementById('route-message');
+
+        if (startLine === 'Line 2' && endLine === 'Line 2') {
+          msgEl.textContent = 'Continue on Line 2 through to your final destination';
+          msgEl.style.display = '';
+        } else if (startLine === 'Line 2' && transferLine !== 'Line 2' && endLine !== 'Line 2') {
+          msgEl.textContent = `Continue on Line 2 and transfer as previously advised to get to ${finalStop}`;
+          msgEl.style.display = '';
+        } else if (transferLine === 'Line 2' && endLine !== 'Line 2') {
+          msgEl.textContent = `Transfer here to ${endLine}`;
+          msgEl.style.display = '';
+        }
+      }
+    }
+    // Data loading and initialization is handled at the bottom of the script
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // VEHICLE STATE
+    // ─────────────────────────────────────────────────────────────────────────
+    const vehicles = [
+      {
+        el:          vehicle1El,
+        labelEl:     label1El,
+        routes:      [FALLBACK_VEHICLE_1_ROUTE_1, FALLBACK_VEHICLE_1_ROUTE_2],
+        routeIndex:  0,
+        speed:       SPEED_VEHICLE_1,
+        angleOffset: SPRITE_ANGLE_OFFSET_V1,
+        segIndex:    0,
+        segT:        0,
+        finished:    false,
+        pausing:     false,
+        pauseTimer:  0,
+      },
+      {
+        el:          vehicle2El,
+        labelEl:     label2El,
+        routes:      [FALLBACK_VEHICLE_2_ROUTE_1, FALLBACK_VEHICLE_2_ROUTE_2],
+        routeIndex:  0,
+        speed:       SPEED_VEHICLE_2,
+        angleOffset: SPRITE_ANGLE_OFFSET_V2,
+        segIndex:    0,
+        segT:        0,
+        finished:    false,
+        pausing:     false,
+        pauseTimer:  0,
+      },
+      {
+        el:          vehicle3El,
+        labelEl:     label3El,
+        routes:      [FALLBACK_VEHICLE_3_ROUTE_1, FALLBACK_VEHICLE_3_ROUTE_2],
+        routeIndex:  0,
+        speed:       SPEED_VEHICLE_3,
+        angleOffset: SPRITE_ANGLE_OFFSET_V3,
+        segIndex:    0,
+        segT:        0,
+        finished:    false,
+        pausing:     false,
+        pauseTimer:  0,
+      },
+    ];
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ANIMATION
+    // ─────────────────────────────────────────────────────────────────────────
+    function updateVehicle(v, dt) {
+      // Handle inter-route pause
+      if (v.pausing) {
+        v.pauseTimer -= dt;
+        if (v.pauseTimer <= 0) {
+          v.pausing    = false;
+          v.pauseTimer = 0;
+          v.routeIndex++;
+          v.segIndex   = 0;
+          v.segT       = 0;
+          v.finished   = false;
+        }
+        return;
+      }
+
+      const route = v.routes[v.routeIndex];
+
+      if (v.finished) return;
+
+      if (v.segIndex >= route.length - 1) {
+        if (v.routeIndex < v.routes.length - 1) {
+          v.pausing    = true;
+          v.pauseTimer = 1.0;
+        } else {
+          v.finished        = true;
+          v.el.style.display      = 'none';
+          v.labelEl.style.display = 'none';
+        }
+        return;
+      }
+
+      let from = route[v.segIndex];
+      let to   = route[v.segIndex + 1];
+      let segLen = Math.hypot(to.x - from.x, to.y - from.y);
+
+      // Guard: skip zero-length segments
+      if (segLen === 0) {
+        v.segIndex++;
+        return;
+      }
+
+      // On the final segment of route1, decelerate linearly from full speed to a near-stop
+      let effectiveSpeed = v.speed;
+      if (v.routeIndex === 0 && v.segIndex === route.length - 2) {
+        // (1 - segT) goes from 1.0 at segment start to 0 at end; floor at 0.05
+        // so the vehicle always makes forward progress and reaches the endpoint
+        effectiveSpeed = v.speed * Math.max(0.05, 1 - v.segT);
+      }
+
+      // Advance progress along current segment
+      v.segT += (effectiveSpeed * dt) / segLen;
+
+      // Handle crossing one or more waypoints in a single frame
+      while (v.segT >= 1.0 && v.segIndex < route.length - 1) {
+        const leftoverT = v.segT - 1.0;
+        const leftoverDist = leftoverT * segLen;
+
+        v.segIndex++;
+
+        if (v.segIndex >= route.length - 1) {
+          v.segT = 1.0;
+          if (v.routeIndex < v.routes.length - 1) {
+            v.pausing    = true;
+            v.pauseTimer = 1.0;
+          } else {
+            v.finished              = true;
+            v.el.style.display      = 'none';
+            v.labelEl.style.display = 'none';
+          }
+          break;
+        }
+
+        from   = route[v.segIndex];
+        to     = route[v.segIndex + 1];
+        segLen = Math.hypot(to.x - from.x, to.y - from.y);
+
+        v.segT = segLen > 0 ? leftoverDist / segLen : 0;
+      }
+
+      // If the vehicle just finished (set inside the while loop above), don't update position
+      if (v.finished) return;
+
+      // Clamp
+      const t = Math.min(v.segT, 1.0);
+
+      // Interpolate position
+      const px = from.x + (to.x - from.x) * t;
+      const py = from.y + (to.y - from.y) * t;
+
+      // Rotation toward next waypoint
+      // When moving left (dx < 0), mirror the angle about the vertical axis and
+      // apply scaleX(-1) so the sprite flips horizontally instead of going upside-down.
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const flipped = dx < 0;
+      const angle = Math.atan2(dy, flipped ? -dx : dx) * (180 / Math.PI) + v.angleOffset;
+
+      // Apply to DOM (offset by half sprite size so position is the centre)
+      const hw = v.el.offsetWidth  / 2;
+      const hh = v.el.offsetHeight / 2;
+      v.el.style.left      = `${px - hw}px`;
+      v.el.style.top       = `${py - hh}px`;
+      v.el.style.transform = flipped ? `scaleX(-1) rotate(${angle}deg)` : `rotate(${angle}deg)`;
+
+      // Position label to the right of the vehicle sprite
+      if (v.labelEl.style.display !== 'none') {
+        v.labelEl.style.left = `${px + hw + 8}px`;
+        v.labelEl.style.top  = `${py - hh}px`;
+      }
+    }
+
+    let lastTime = null;
+
+    function tick(timestamp) {
+      if (lastTime === null) lastTime = timestamp;
+
+      // Clamp dt to 100 ms so tab-switch pauses don't cause a huge jump
+      const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+      lastTime = timestamp;
+
+      for (const v of vehicles) {
+        if (!v.finished || v.pausing) updateVehicle(v, dt);
+      }
+
+      // Check if all visible vehicles have finished
+      if (!animationComplete) {
+        const allDone = vehicles.every(v => v.finished);
+        if (allDone) {
+          animationComplete = true;
+          onAnimationComplete();
+        }
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // INITIALIZATION — load data, then start first animation instance
+    // ─────────────────────────────────────────────────────────────────────────
+    loadArrivalData().then(() => {
+      computeLine2Stations();
+
+      if (!line2Departure) {
+        // No Line 2 involvement on this route — show message, skip animation
+        document.getElementById('arrival-heading-top').textContent = 'No Line 2 on this route';
+        document.getElementById('arrival-heading').textContent =
+          'This route does not use Line 2';
+        const msgEl = document.getElementById('route-message');
+        if (msgEl) {
+          msgEl.textContent = 'Route goes from ' + pageState.NearestMetro1 +
+            ' to ' + pageState.NearestMetro2 + ' without using Line 2.';
+          msgEl.style.display = '';
+        }
+        document.getElementById('btn-next').style.display = '';
+        vehicles.forEach(v => {
+          v.el.style.display = 'none';
+          v.labelEl.style.display = 'none';
+        });
+        return;
+      }
+
+      startInstance(1);
+      setTimeout(() => requestAnimationFrame(tick), 1000);
+    });
+
+    // Restore saved theme (matches app-wide theme_preference in localStorage)
+    document.body.setAttribute('data-theme', localStorage.getItem('theme_preference') || 'dark');
+
+    window.addEventListener('storage', function (e) {
+      if (e.key === 'theme_preference') {
+        document.body.setAttribute('data-theme', e.newValue || 'dark');
+      }
+    });
+  </script>
+
+<nav class="bottom-nav">
+  <a href="../index.html" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+    </svg>
+    <span>Home</span>
+  </a>
+  <a href="../FlashCards/index.html" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="4" width="20" height="14" rx="2"></rect>
+      <rect x="5" y="1" width="14" height="4" rx="1" opacity="0.5"></rect>
+      <line x1="8" y1="10" x2="16" y2="10"></line>
+      <line x1="8" y1="14" x2="13" y2="14"></line>
+    </svg>
+    <span>Flashcards</span>
+  </a>
+  <a href="#" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10"></line>
+      <line x1="12" y1="20" x2="12" y2="4"></line>
+      <line x1="6" y1="20" x2="6" y2="14"></line>
+    </svg>
+    <span>Progress Dashboard</span>
+  </a>
+  <a href="#" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+    </svg>
+    <span>Settings</span>
+  </a>
+</nav>
+<script type="module">
+    import { initBrand } from '../brand_loader.js';
+    initBrand();
+</script>
+</body>
+</html>

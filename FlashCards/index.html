@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Card Explorer — Choose Your Cards</title>
+    <link rel="icon" href="../brand/favicon.png">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border-color: #334155;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-dim: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            transition: background-color 0.3s ease;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+        }
+
+        header .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-dim);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 28px 20px 180px;
+        }
+
+        .page-description {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin: 0 0 28px;
+            line-height: 1.6;
+        }
+
+        #loading-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #filter-form {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #filter-form.visible {
+            display: flex;
+        }
+
+        .filter-group {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .filter-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .filter-group-header:hover {
+            background-color: rgba(56, 189, 248, 0.05);
+        }
+
+        .filter-group-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .filter-group-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-count-badge {
+            background-color: var(--accent);
+            color: #0f172a;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .filter-count-badge.visible {
+            display: inline-block;
+        }
+
+        .btn-select-all,
+        .btn-clear-all {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-dim);
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .btn-select-all:hover,
+        .btn-clear-all:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .filter-group-body {
+            padding: 14px 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .filter-group-body.collapsed {
+            display: none;
+        }
+
+        .checkbox-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 5px 12px;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+            font-size: 0.82rem;
+        }
+
+        .checkbox-pill:hover {
+            border-color: var(--accent);
+        }
+
+        .checkbox-pill input[type="checkbox"] {
+            accent-color: var(--accent);
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .checkbox-pill.checked {
+            border-color: var(--accent);
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+        }
+
+        footer {
+            position: fixed;
+            bottom: 60px;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        /* ─── Bottom Navigation Bar ───────────────────────────────── */
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 8px 0 10px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 9;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.72rem;
+            padding: 4px 12px;
+            border-radius: 8px;
+            transition: color 0.2s;
+        }
+
+        .nav-item:hover {
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .footer-summary {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .footer-summary strong {
+            color: var(--text-main);
+        }
+
+        #btn-start {
+            background-color: var(--accent);
+            color: #0f172a;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+        }
+
+        #btn-start:hover {
+            background-color: var(--accent-hover);
+        }
+
+        #btn-start:active {
+            transform: scale(0.97);
+        }
+
+        #btn-start:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-reset-filters {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-dim);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .btn-reset-filters.active {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-reset-filters.active:hover {
+            border-color: var(--accent-hover);
+            color: var(--accent-hover);
+        }
+
+        /* ─── Follow a Route ──────────────────────────────────── */
+
+        .route-section {
+            background-color: var(--card-bg);
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        .route-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .route-section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .route-section-body {
+            padding: 14px 18px;
+        }
+
+        .route-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .route-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 6px 14px;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+            font-size: 0.82rem;
+            user-select: none;
+        }
+
+        .route-pill:hover {
+            border-color: var(--accent);
+        }
+
+        .route-pill.selected {
+            border-color: var(--accent);
+            background-color: rgba(56, 189, 248, 0.15);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .route-pill-flag {
+            color: var(--text-dim);
+            font-size: 0.72rem;
+            font-style: italic;
+        }
+
+        .route-info {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+            margin-top: 6px;
+        }
+
+        .route-info strong {
+            color: var(--text-main);
+        }
+
+        .route-resume-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-restart-route {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-dim);
+            font-size: 0.72rem;
+            padding: 3px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .btn-restart-route:hover {
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+
+        .btn-deactivate-route {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-dim);
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .btn-deactivate-route:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        /* Dim filter groups when route mode is active */
+        #filter-form.route-active .filter-group {
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        /* Dim filter groups when word game mode is active — Metro Station stays interactive */
+        #filter-form.game-active .filter-group {
+            opacity: 0.35;
+            pointer-events: none;
+        }
+        #filter-form.game-active .filter-group[data-field="NearestMetro"] {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #route-mode-section.game-active {
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        .game-instruction-list {
+            list-style: none;
+            padding: 0;
+            margin: 6px 0 12px;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .game-instruction-list li {
+            padding: 3px 0;
+        }
+
+        .game-instruction-list li::before {
+            content: "\2192  ";
+            color: var(--accent);
+        }
+
+        .game-section-title {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin: 10px 0 4px;
+        }
+
+        .game-hint {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin: 12px 0 8px;
+            font-style: italic;
+        }
+
+        .game-error {
+            color: #ef4444;
+            font-size: 0.82rem;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .game-error.visible {
+            display: block;
+        }
+
+        .btn-launch-game {
+            background-color: #f59e0b;
+            color: #0f172a;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-launch-game:hover {
+            background-color: #d97706;
+        }
+
+        .btn-launch-game.active {
+            background-color: #ef4444;
+        }
+
+        .btn-launch-game.active:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-continue-game {
+            background-color: var(--accent);
+            color: #0f172a;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-continue-game:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-reset-game {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-dim);
+            font-size: 0.72rem;
+            padding: 3px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .btn-reset-game:hover {
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1rem;
+            }
+
+            footer {
+                padding: 8px 12px;
+                gap: 10px;
+            }
+
+            #btn-start {
+                padding: 7px 14px;
+                font-size: 0.82rem;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+<header>
+    <div>
+        <h1>Flash Card Explorer</h1>
+        <div class="subtitle">Select filters to customise your flashcard session</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn-reset-filters" id="btn-reset">Reset filters</button>
+        <button class="theme-toggle" onclick="toggleTheme()">Light / Dark</button>
+    </div>
+</header>
+
+<main>
+    <p class="page-description">
+        Either choose a Route to follow or select one or more values in a category to filter to those cards only.
+    </p>
+
+    <div id="loading-state">
+        <div class="spinner"></div>
+        <div>Loading flashcard data…</div>
+    </div>
+
+    <div id="route-mode-section" class="route-section" style="display:none;"></div>
+
+    <div id="word-game-holder" style="display:none;"></div>
+
+    <div id="filter-form" role="form" aria-label="Filter selection"></div>
+</main>
+
+<footer>
+    <div class="footer-summary">
+        Selected <strong id="card-count">—</strong> cards
+    </div>
+    <button id="btn-start">Start Flashcards →</button>
+</footer>
+
+<nav class="bottom-nav">
+    <a href="../index.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>Home</span>
+    </a>
+    <a href="flashcards.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="14" rx="2"></rect>
+            <rect x="5" y="1" width="14" height="4" rx="1" opacity="0.5"></rect>
+            <line x1="8" y1="10" x2="16" y2="10"></line>
+            <line x1="8" y1="14" x2="13" y2="14"></line>
+        </svg>
+        <span>Flashcards</span>
+    </a>
+    <a href="../ProgressDashboard/index.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        <span>Progress Dashboard</span>
+    </a>
+    <a href="../settings.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span>Settings</span>
+    </a>
+</nav>
+
+<script type="module">
+    import { bootstrap } from './init/app_bootstrap.js';
+    import { getFilteredFlashcards, getRouteNames, getRouteBatch, getWordGameNames } from './services/flashcard_service.js';
+    import { saveFilters, getFilters, saveRouteMode, getRouteMode, clearRouteMode, saveWordGame, getWordGame, clearWordGame } from './services/filter_service.js';
+
+    // Filter fields displayed in the UI (PlaceOfInterestNameEng excluded — too many unique values)
+    const FILTER_FIELDS = [
+        { key: 'WordCategory',      label: 'Word Category' },
+        { key: 'WordListName',      label: 'Word List' },
+        { key: 'RouteName',         label: 'Route List by Category (No Route Maps)' },
+        { key: 'Neighborhood',      label: 'Neighborhood' },
+        { key: 'POICategory',       label: 'Place Category' },
+        { key: 'NearestMetro',      label: 'Metro Station' },
+    ];
+
+    let allCards = [];
+    let currentFilters = {};
+    let routeModeActive = false;
+    let selectedRouteName = '';
+    let routeState = null;
+    let wordGameActive = false;
+    let wordGameState = null;
+
+    // ─── Startup ───────────────────────────────────────────────────────────────
+
+    (async () => {
+        await bootstrap();
+
+        allCards = await getFilteredFlashcards(null);
+        currentFilters = await getFilters();
+        routeState = await getRouteMode();
+        wordGameState = await getWordGame();
+
+        const routeNames = await getRouteNames();
+        renderRouteSection(routeNames, routeState);
+
+        renderFilterForm(allCards, currentFilters);
+
+        const wordGameNames = await getWordGameNames();
+        renderWordGameSection(wordGameNames, wordGameState);
+
+        updateCardCount();
+
+        // Restore route mode if it was previously active
+        if (routeState.active && routeNames.some(r => r.name === routeState.routeName)) {
+            activateRouteMode(routeState.routeName, false);
+        }
+
+        // Restore word game mode if it was previously active
+        if (wordGameState.active) {
+            activateWordGameMode(false);
+        }
+
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('filter-form').classList.add('visible');
+
+        // Scroll to the Word Game section when arriving with an active game
+        if (wordGameState.active) {
+            const gameSection = document.getElementById('word-game-section');
+            if (gameSection) gameSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    })();
+
+    // ─── Rendering ─────────────────────────────────────────────────────────────
+
+    function renderFilterForm(cards, savedFilters) {
+        const form = document.getElementById('filter-form');
+        form.innerHTML = '';
+
+        for (const { key, label } of FILTER_FIELDS) {
+            const uniqueValues = [...new Set(
+                cards.map(c => c[key]).filter(v => v !== '' && v !== null && v !== undefined)
+            )].sort((a, b) => String(a).localeCompare(String(b)));
+
+            if (uniqueValues.length === 0) continue;
+
+            const savedValues = savedFilters[key] || [];
+            const group = buildFilterGroup(key, label, uniqueValues, savedValues);
+            form.appendChild(group);
+        }
+    }
+
+    function buildFilterGroup(field, label, values, checkedValues) {
+        const group = document.createElement('div');
+        group.className = 'filter-group';
+        group.dataset.field = field;
+
+        const checkedSet = new Set(checkedValues.map(String));
+        const checkedCount = values.filter(v => checkedSet.has(String(v))).length;
+
+        group.innerHTML = `
+            <div class="filter-group-header" data-field="${field}">
+                <span class="filter-group-title">${label}</span>
+                <div class="filter-group-controls">
+                    <span class="filter-count-badge ${checkedCount > 0 ? 'visible' : ''}" id="badge-${field}">${checkedCount}</span>
+                    <button class="btn-select-all" data-field="${field}" type="button">All</button>
+                    <button class="btn-clear-all" data-field="${field}" type="button">Clear</button>
+                </div>
+            </div>
+            <div class="filter-group-body" id="body-${field}"></div>
+        `;
+
+        const body = group.querySelector(`#body-${field}`);
+
+        for (const value of values) {
+            const isChecked = checkedSet.has(String(value));
+            const pill = document.createElement('label');
+            pill.className = `checkbox-pill${isChecked ? ' checked' : ''}`;
+            pill.innerHTML = `
+                <input type="checkbox" name="${field}" value="${escapeAttr(String(value))}" ${isChecked ? 'checked' : ''}>
+                ${escapeHtml(String(value))}
+            `;
+
+            const checkbox = pill.querySelector('input');
+            checkbox.addEventListener('change', () => {
+                pill.classList.toggle('checked', checkbox.checked);
+                updateBadge(field);
+                updateCardCount();
+            });
+
+            body.appendChild(pill);
+        }
+
+        // Header collapse toggle
+        group.querySelector('.filter-group-header').addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-select-all') || e.target.classList.contains('btn-clear-all')) return;
+            body.classList.toggle('collapsed');
+        });
+
+        // Select all
+        group.querySelector('.btn-select-all').addEventListener('click', (e) => {
+            e.stopPropagation();
+            group.querySelectorAll(`input[name="${field}"]`).forEach(cb => {
+                cb.checked = true;
+                cb.closest('.checkbox-pill').classList.add('checked');
+            });
+            updateBadge(field);
+            updateCardCount();
+        });
+
+        // Clear all
+        group.querySelector('.btn-clear-all').addEventListener('click', (e) => {
+            e.stopPropagation();
+            group.querySelectorAll(`input[name="${field}"]`).forEach(cb => {
+                cb.checked = false;
+                cb.closest('.checkbox-pill').classList.remove('checked');
+            });
+            updateBadge(field);
+            updateCardCount();
+        });
+
+        return group;
+    }
+
+    // ─── Route Mode ─────────────────────────────────────────────────────────────
+
+    function renderRouteSection(routeNames, savedRouteState) {
+        const section = document.getElementById('route-mode-section');
+        if (routeNames.length === 0) { section.style.display = 'none'; return; }
+
+        section.innerHTML = `
+            <div class="route-section-header">
+                <span class="route-section-title">Follow a Route</span>
+                <button class="btn-deactivate-route" id="btn-deactivate-route" style="display:none;" type="button">Off</button>
+            </div>
+            <div class="route-section-body">
+                <div class="route-pills" id="route-pills"></div>
+                <div class="route-info" id="route-info">
+                    Select a route to study cards station by station. Other filters will be ignored.
+                </div>
+                <div class="route-resume-row" id="route-resume-row" style="display:none;">
+                    <button class="btn-restart-route" id="btn-restart-route" type="button">Restart Route</button>
+                </div>
+            </div>
+        `;
+
+        const pillsContainer = section.querySelector('#route-pills');
+        for (const route of routeNames) {
+            const pill = document.createElement('div');
+            pill.className = 'route-pill';
+            pill.dataset.route = route.name;
+            pill.innerHTML = escapeHtml(route.name) +
+                (route.isCustom ? ' <span class="route-pill-flag">(MyList)</span>' : '');
+            pill.addEventListener('click', () => {
+                if (routeModeActive && selectedRouteName === route.name) {
+                    deactivateRouteMode();
+                } else {
+                    activateRouteMode(route.name, true);
+                }
+            });
+            pillsContainer.appendChild(pill);
+        }
+
+        section.querySelector('#btn-deactivate-route').addEventListener('click', () => deactivateRouteMode());
+        section.querySelector('#btn-restart-route').addEventListener('click', async () => {
+            localStorage.removeItem('station_visits');
+            routeState = { active: true, routeName: selectedRouteName, nextWordID: null, completedMetros: [] };
+            await saveRouteMode(routeState);
+            activateRouteMode(selectedRouteName, false);
+        });
+
+        section.style.display = '';
+    }
+
+    async function activateRouteMode(routeName, isNewSelection) {
+        if (wordGameActive) deactivateWordGameMode();
+        routeModeActive = true;
+        selectedRouteName = routeName;
+
+        // Highlight selected pill
+        document.querySelectorAll('.route-pill').forEach(p => {
+            p.classList.toggle('selected', p.dataset.route === routeName);
+        });
+
+        // Show Off button
+        document.getElementById('btn-deactivate-route').style.display = '';
+
+        // Dim filter groups
+        document.getElementById('filter-form').classList.add('route-active');
+
+        // If new selection and not resuming existing route, reset state
+        if (isNewSelection && (!routeState.active || routeState.routeName !== routeName)) {
+            routeState = { active: true, routeName, nextWordID: null, completedMetros: [] };
+        }
+
+        // Show route info with card count and resume status
+        const batchInfo = await getRouteBatch(routeName, routeState.nextWordID ?? null);
+        const infoEl = document.getElementById('route-info');
+        const resumeRow = document.getElementById('route-resume-row');
+
+        const isResuming = routeState.active && routeState.routeName === routeName && routeState.nextWordID != null;
+        const isRouteComplete = batchInfo.batch.length === 0;
+
+        if (isRouteComplete) {
+            infoEl.innerHTML = `<strong>${escapeHtml(routeName)}</strong> — ${batchInfo.totalCards} cards total. ` +
+                `Route completed! Click <strong>Restart Route</strong> to begin again.`;
+            resumeRow.style.display = '';
+        } else if (isResuming) {
+            infoEl.innerHTML = `<strong>${escapeHtml(routeName)}</strong> — ${batchInfo.totalCards} cards total. ` +
+                `Resuming from <strong>${escapeHtml(batchInfo.currentMetro || '—')}</strong>.`;
+            resumeRow.style.display = '';
+        } else {
+            infoEl.innerHTML = `<strong>${escapeHtml(routeName)}</strong> — ${batchInfo.totalCards} cards total. ` +
+                `Starting at <strong>${escapeHtml(batchInfo.currentMetro || '—')}</strong>.`;
+            resumeRow.style.display = 'none';
+        }
+
+        // Update card count to show route total
+        document.getElementById('card-count').textContent = batchInfo.totalCards.toLocaleString();
+        document.getElementById('btn-start').disabled = batchInfo.totalCards === 0;
+    }
+
+    function deactivateRouteMode() {
+        routeModeActive = false;
+        selectedRouteName = '';
+
+        document.querySelectorAll('.route-pill').forEach(p => p.classList.remove('selected'));
+        document.getElementById('btn-deactivate-route').style.display = 'none';
+        document.getElementById('route-resume-row').style.display = 'none';
+        document.getElementById('route-info').textContent =
+            'Select a route to study cards station by station. Other filters will be ignored.';
+
+        // Re-enable filter groups
+        document.getElementById('filter-form').classList.remove('route-active');
+
+        // Persist the deactivation so it survives navigation
+        clearRouteMode();
+
+        // Restore normal card count
+        updateCardCount();
+    }
+
+    // ─── Word Game Mode ───────────────────────────────────────────────────────
+
+    function renderWordGameSection(gameNames, savedState) {
+        const holder = document.getElementById('word-game-holder');
+        const names = Object.keys(gameNames);
+        if (names.length === 0) { holder.style.display = 'none'; return; }
+
+        let gamesHTML = '';
+        for (const name of names) {
+            const instructions = gameNames[name];
+            gamesHTML += `<div class="game-section-title">${escapeHtml(name)}</div>`;
+            if (instructions.length > 0) {
+                gamesHTML += `<ul class="game-instruction-list">`;
+                for (const instr of instructions) {
+                    gamesHTML += `<li>${escapeHtml(instr)}</li>`;
+                }
+                gamesHTML += `</ul>`;
+            }
+        }
+
+        holder.innerHTML = `
+            <div class="route-section" id="word-game-section">
+                <div class="route-section-header">
+                    <span class="route-section-title">Word Game</span>
+                    <button class="btn-deactivate-route" id="btn-deactivate-game" style="display:none;" type="button">Off</button>
+                </div>
+                <div class="route-section-body">
+                    ${gamesHTML}
+                    <div class="game-hint">Select a Metro Station from the list below, then launch the game.</div>
+                    <div style="display:flex;gap:10px;align-items:center;margin-top:10px;">
+                        <button class="btn-launch-game" id="btn-launch-game" type="button">Launch Game</button>
+                        <button class="btn-continue-game" id="btn-continue-game" type="button" style="display:none;">Continue Game</button>
+                        <button class="btn-reset-game" id="btn-reset-game" type="button">Reset Game</button>
+                    </div>
+                    <div class="game-error" id="game-error">Please select a Metro Station before launching the game.</div>
+                </div>
+            </div>
+        `;
+
+        holder.querySelector('#btn-launch-game').addEventListener('click', async () => {
+            if (wordGameActive) {
+                deactivateWordGameMode();
+            } else {
+                // Validate metro selection
+                const selectedMetros = [...document.querySelectorAll('input[name="NearestMetro"]:checked')].map(cb => cb.value);
+                if (selectedMetros.length === 0) {
+                    const errorEl = document.getElementById('game-error');
+                    if (errorEl) errorEl.classList.add('visible');
+                    return;
+                }
+
+                const btn = holder.querySelector('#btn-launch-game');
+                btn.disabled = true;
+                btn.textContent = 'Launching…';
+
+                // Save word game state and navigate — preserve session totals accumulated across stations
+                const stateToSave = {
+                    active: true,
+                    selectedMetro: selectedMetros[0],
+                    correctCount: 0,
+                    incorrectCount: 0,
+                    sessionCardsSeen: wordGameState.sessionCardsSeen || 0,
+                    sessionMetroVisits: wordGameState.sessionMetroVisits || 0,
+                    helpCount: wordGameState.helpCount || 0,
+                };
+                await saveWordGame(stateToSave);
+                await clearRouteMode();
+                sessionStorage.setItem('fc_origin', 'explorer');
+                window.location.href = 'flashcards.html';
+            }
+        });
+
+        holder.querySelector('#btn-deactivate-game').addEventListener('click', () => deactivateWordGameMode());
+
+        holder.querySelector('#btn-continue-game').addEventListener('click', async () => {
+            if (wordGameActive && wordGameState) {
+                const selectedMetros = [...document.querySelectorAll('input[name="NearestMetro"]:checked')].map(cb => cb.value);
+                if (selectedMetros.length > 0) {
+                    await saveWordGame({
+                        active: true,
+                        selectedMetro: selectedMetros[0],
+                        correctCount: wordGameState.correctCount || 0,
+                        incorrectCount: wordGameState.incorrectCount || 0,
+                        sessionCardsSeen: wordGameState.sessionCardsSeen || 0,
+                        sessionMetroVisits: wordGameState.sessionMetroVisits || 0,
+                        helpCount: wordGameState.helpCount || 0,
+                    });
+                }
+            }
+            sessionStorage.setItem('fc_origin', 'explorer');
+            window.location.href = 'flashcards.html';
+        });
+
+        holder.querySelector('#btn-reset-game').addEventListener('click', async () => {
+            await clearWordGame();
+            wordGameState = await getWordGame();
+            deactivateWordGameMode();
+        });
+
+        holder.style.display = '';
+
+        // Move the word game section into the filter form after RouteName group
+        moveWordGameIntoFilterForm();
+    }
+
+    function moveWordGameIntoFilterForm() {
+        const form = document.getElementById('filter-form');
+        const holder = document.getElementById('word-game-holder');
+        if (!holder.firstElementChild) return;
+
+        const metroGroup = form.querySelector('.filter-group[data-field="NearestMetro"]');
+        if (metroGroup) {
+            form.insertBefore(holder, metroGroup);
+        } else {
+            form.appendChild(holder);
+        }
+    }
+
+    function activateWordGameMode(isNewSelection) {
+        let selectedMetros;
+
+        if (!isNewSelection && wordGameState && wordGameState.selectedMetro) {
+            // Restoring — use saved metro and pre-tick the checkbox
+            selectedMetros = [wordGameState.selectedMetro];
+            const cb = document.querySelector(`input[name="NearestMetro"][value="${CSS.escape(wordGameState.selectedMetro)}"]`);
+            if (cb) {
+                cb.checked = true;
+                cb.closest('.checkbox-pill').classList.add('checked');
+                updateBadge('NearestMetro');
+            }
+        } else {
+            // New selection — read from checked checkboxes
+            selectedMetros = [...document.querySelectorAll('input[name="NearestMetro"]:checked')].map(cb => cb.value);
+            if (selectedMetros.length === 0) {
+                const errorEl = document.getElementById('game-error');
+                if (errorEl) errorEl.classList.add('visible');
+                return;
+            }
+        }
+
+        // Hide any error
+        const errorEl = document.getElementById('game-error');
+        if (errorEl) errorEl.classList.remove('visible');
+
+        // Deactivate route mode if active (mutual exclusion)
+        if (routeModeActive) deactivateRouteMode();
+
+        wordGameActive = true;
+
+        if (isNewSelection) {
+            wordGameState = { active: true, selectedMetro: selectedMetros[0], correctCount: 0, incorrectCount: 0 };
+        }
+
+        // Dim filter groups except Metro Station, and dim the route section
+        document.getElementById('filter-form').classList.add('game-active');
+        document.getElementById('route-mode-section').classList.add('game-active');
+
+        // Toggle button to "End Game"
+        const btn = document.getElementById('btn-launch-game');
+        btn.textContent = 'End Game';
+        btn.classList.add('active');
+
+        // Show Off button
+        document.getElementById('btn-deactivate-game').style.display = '';
+
+        // Show Continue Game button (only useful when returning to an active game)
+        const continueBtn = document.getElementById('btn-continue-game');
+        if (continueBtn) continueBtn.style.display = '';
+
+        // Hide Start Flashcards button — game has its own launch controls
+        document.getElementById('btn-start').style.display = 'none';
+
+        // Update card count
+        updateGameCardCount(selectedMetros);
+    }
+
+    function deactivateWordGameMode() {
+        wordGameActive = false;
+
+        // Hide error
+        const errorEl = document.getElementById('game-error');
+        if (errorEl) errorEl.classList.remove('visible');
+
+        // Re-enable filter groups and route section
+        document.getElementById('filter-form').classList.remove('game-active');
+        document.getElementById('route-mode-section').classList.remove('game-active');
+
+        // Toggle button back
+        const btn = document.getElementById('btn-launch-game');
+        if (btn) {
+            btn.textContent = 'Launch Game';
+            btn.classList.remove('active');
+        }
+
+        // Hide Off button
+        const offBtn = document.getElementById('btn-deactivate-game');
+        if (offBtn) offBtn.style.display = 'none';
+
+        // Hide Continue Game button
+        const continueBtn = document.getElementById('btn-continue-game');
+        if (continueBtn) continueBtn.style.display = 'none';
+
+        // Restore Start Flashcards button
+        document.getElementById('btn-start').style.display = '';
+
+        // Persist the deactivation so it survives navigation
+        clearWordGame();
+
+        updateCardCount();
+    }
+
+    async function updateGameCardCount(selectedMetros) {
+        const filters = { NearestMetro: selectedMetros };
+        const filtered = await getFilteredFlashcards(filters);
+        document.getElementById('card-count').textContent = filtered.length.toLocaleString();
+    }
+
+    // ─── Filter collection ─────────────────────────────────────────────────────
+
+    function collectSelections() {
+        const selections = {};
+        for (const { key } of FILTER_FIELDS) {
+            const checked = document.querySelectorAll(`input[name="${key}"]:checked`);
+            selections[key] = [...checked].map(cb => cb.value);
+        }
+        return selections;
+    }
+
+    // ─── Live card count ───────────────────────────────────────────────────────
+
+    async function updateCardCount() {
+        if (routeModeActive) return; // Route mode manages its own count
+        if (wordGameActive) {
+            // Word game mode — recount based on currently selected metro stations
+            const selectedMetros = [...document.querySelectorAll('input[name="NearestMetro"]:checked')].map(cb => cb.value);
+            await updateGameCardCount(selectedMetros);
+            return;
+        }
+        const filters = collectSelections();
+        const hasActiveFilter = Object.values(filters).some(arr => arr.length > 0);
+        updateResetButtonState();
+        if (!hasActiveFilter) {
+            document.getElementById('card-count').textContent = '0';
+            document.getElementById('btn-start').disabled = true;
+            return;
+        }
+        const filtered = await getFilteredFlashcards(filters);
+        const count = filtered.length;
+        document.getElementById('card-count').textContent = count.toLocaleString();
+        document.getElementById('btn-start').disabled = count === 0;
+    }
+
+    // ─── Reset button state ────────────────────────────────────────────────────
+
+    function updateResetButtonState() {
+        const hasFilters = FILTER_FIELDS.some(({ key }) =>
+            document.querySelectorAll(`input[name="${key}"]:checked`).length > 0
+        );
+        document.getElementById('btn-reset').classList.toggle('active', hasFilters);
+    }
+
+    // ─── Badge update ──────────────────────────────────────────────────────────
+
+    function updateBadge(field) {
+        const count = document.querySelectorAll(`input[name="${field}"]:checked`).length;
+        const badge = document.getElementById(`badge-${field}`);
+        if (!badge) return;
+        badge.textContent = count;
+        badge.classList.toggle('visible', count > 0);
+    }
+
+    // ─── Reset ─────────────────────────────────────────────────────────────────
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+        document.querySelectorAll('#filter-form input[type="checkbox"]').forEach(cb => {
+            if (wordGameActive && cb.name === 'NearestMetro') return;
+            cb.checked = false;
+            cb.closest('.checkbox-pill').classList.remove('checked');
+        });
+        for (const { key } of FILTER_FIELDS) {
+            if (wordGameActive && key === 'NearestMetro') continue;
+            updateBadge(key);
+        }
+        updateCardCount();
+    });
+
+    // ─── Start Flashcards ──────────────────────────────────────────────────────
+
+    document.getElementById('btn-start').addEventListener('click', async () => {
+        const btn = document.getElementById('btn-start');
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+
+        if (wordGameActive) {
+            // Save word game state
+            const selectedMetros = [...document.querySelectorAll('input[name="NearestMetro"]:checked')].map(cb => cb.value);
+            const stateToSave = {
+                active: true,
+                selectedMetro: selectedMetros[0] || '',
+                correctCount: wordGameState.correctCount || 0,
+                incorrectCount: wordGameState.incorrectCount || 0,
+                sessionCardsSeen: wordGameState.sessionCardsSeen || 0,
+                sessionMetroVisits: wordGameState.sessionMetroVisits || 0,
+                helpCount: wordGameState.helpCount || 0,
+            };
+            await saveWordGame(stateToSave);
+            await clearRouteMode();
+        } else if (routeModeActive) {
+            // Save route mode state — keep existing nextWordID for resume
+            const stateToSave = {
+                active: true,
+                routeName: selectedRouteName,
+                nextWordID: routeState.nextWordID ?? null,
+                completedMetros: routeState.completedMetros || [],
+            };
+            await saveRouteMode(stateToSave);
+            await clearWordGame();
+        } else {
+            // Normal filter mode — clear route mode and word game, save filters
+            await clearRouteMode();
+            await clearWordGame();
+            const selections = collectSelections();
+            await saveFilters(selections);
+        }
+
+        sessionStorage.setItem('fc_origin', 'explorer');
+        window.location.href = 'flashcards.html';
+    });
+
+    // ─── Theme ─────────────────────────────────────────────────────────────────
+
+    function toggleTheme() {
+        const body = document.body;
+        const current = body.getAttribute('data-theme') || 'dark';
+        const next = current === 'dark' ? 'light' : 'dark';
+        body.setAttribute('data-theme', next);
+        localStorage.setItem('theme_preference', next);
+    }
+
+    // Restore saved theme
+    document.body.setAttribute('data-theme', localStorage.getItem('theme_preference') || 'dark');
+
+    window.addEventListener('storage', function (e) {
+      if (e.key === 'theme_preference') {
+        document.body.setAttribute('data-theme', e.newValue || 'dark');
+      }
+    });
+
+    window.toggleTheme = toggleTheme;
+
+    // ─── Helpers ───────────────────────────────────────────────────────────────
+
+    function escapeHtml(str) {
+        const d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+    }
+
+    function escapeAttr(str) {
+        return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+</script>
+<script type="module">
+    import { initBrand } from '../brand_loader.js';
+    initBrand();
+</script>
+</body>
+</html>

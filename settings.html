@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - {brand}</title>
+  <link rel="icon" href="brand/favicon.png">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    // Apply saved theme before render to prevent flash
+    (function () {
+      const t = localStorage.getItem('app_theme');
+      document.documentElement.setAttribute('data-theme', t || 'dark');
+    })();
+  </script>
+</head>
+<body>
+  <div class="app-container">
+
+    <header class="header">
+      <div class="container header-content">
+        <div class="logo" data-brand="name">Korean Vocabulary</div>
+        <div class="user-greeting">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="user-icon">
+            <circle cx="12" cy="8" r="5"></circle>
+            <path d="M20 21a8 8 0 1 0-16 0"></path>
+          </svg>
+          <span>Welcome Back</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+
+      <div id="status_area" role="status" aria-live="polite"></div>
+
+      <!-- ── User Guide link ────────────────────────────────────── -->
+      <div class="settings-group">
+        <div class="card">
+          <div class="settings-menu">
+            <a href="user-guide.html" class="settings-item" style="text-decoration:none;color:inherit;">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>User Guide</h3>
+                <p>How to use the app &mdash; flashcards, notes, data &amp; backup</p>
+              </div>
+              <div class="settings-control">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── App Info & Settings ──────────────────────────────── -->
+      <div class="settings-group">
+        <div class="settings-group-title">App Info &amp; Settings</div>
+        <div class="card">
+          <div class="settings-menu">
+
+            <!-- Memory usage -->
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                  <path d="M22 10H2"></path>
+                  <path d="M7 6V4"></path><path d="M17 6V4"></path>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Browser Storage Usage</h3>
+                <p id="memory-label">Calculating&hellip;</p>
+                <div class="memory-bar-container">
+                  <div class="memory-bar" id="memory-bar"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dark mode toggle -->
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Dark Mode</h3>
+                <p>Toggle light or dark theme</p>
+              </div>
+              <div class="settings-control">
+                <label class="toggle" aria-label="Toggle dark mode">
+                  <input type="checkbox" id="theme-toggle">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Data Management ──────────────────────────────────── -->
+      <div class="settings-group">
+        <div class="settings-group-title">Data Management</div>
+        <div class="card">
+          <div class="settings-menu">
+
+            <!-- Re-import database -->
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="1 4 1 10 7 10"></polyline>
+                  <path d="M3.51 15a9 9 0 1 0 .49-3.51"></path>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Re-import Database</h3>
+                <p>Reload vocabulary from source &mdash; keeps your progress</p>
+              </div>
+              <div class="settings-control">
+                <button class="settings-btn" id="btn-reimport">Import</button>
+              </div>
+            </div>
+
+            <!-- Import custom word list -->
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="12" y1="18" x2="12" y2="12"></line>
+                  <line x1="9" y1="15" x2="15" y2="15"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Import Custom Word List</h3>
+                <p>Add words from an external file &mdash; existing data is kept</p>
+              </div>
+              <div class="settings-control">
+                <button class="settings-btn" id="btn-import-custom">Import</button>
+                <input type="file" id="file-import-custom" accept=".json" style="display:none">
+              </div>
+            </div>
+
+            <!-- Export comments to CSV -->
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Export My Words List</h3>
+                <p>Download completed words as a CSV file</p>
+              </div>
+              <div class="settings-control">
+                <button class="settings-btn" id="btn-export-csv">Export</button>
+              </div>
+            </div>
+
+            <!-- Design custom word lists -->
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Design Custom Word Lists</h3>
+                <p>Create your own vocabulary lists, routes and word games.</p>
+              </div>
+              <div class="settings-control">
+                <button class="settings-btn" id="btn-design-custom">Open</button>
+              </div>
+            </div>
+
+            <!-- Change browser sub-section -->
+            <div class="settings-sub-header">Change Browser</div>
+
+            <!-- Export user data -->
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Export User Data</h3>
+                <p>Save all progress &amp; settings to a backup file</p>
+              </div>
+              <div class="settings-control">
+                <button class="settings-btn" id="btn-export-user">Export</button>
+              </div>
+            </div>
+
+            <!-- Import user data -->
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Import User Data</h3>
+                <p>Restore progress from a backup file</p>
+              </div>
+              <div class="settings-control">
+                <button class="settings-btn" id="btn-import-user">Import</button>
+                <input type="file" id="file-import-user" accept=".json" style="display:none">
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Danger Zone ──────────────────────────────────────── -->
+      <div class="settings-group">
+        <div class="settings-group-title">Danger Zone</div>
+        <div class="card">
+          <div class="settings-menu">
+
+            <!-- Reset application -->
+            <div class="settings-item danger">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Reset Application</h3>
+                <p>Delete all user progress &amp; settings (vocabulary kept)</p>
+              </div>
+              <div class="settings-control">
+                <button class="settings-btn danger-btn" id="btn-reset">Reset</button>
+              </div>
+            </div>
+
+            <!-- Clear memory and exit -->
+            <div class="settings-item danger">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                  <path d="M10 11v6"></path><path d="M14 11v6"></path>
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Clear Memory &amp; Exit</h3>
+                <p>Wipe all app data from this browser and close</p>
+              </div>
+              <div class="settings-control">
+                <button class="settings-btn danger-btn" id="btn-clear-exit">Clear</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Legal ──────────────────────────────────────────────── -->
+      <div class="settings-group">
+        <div class="card">
+          <div class="settings-menu">
+            <a href="terms-and-privacy.html" class="settings-item" style="text-decoration:none;color:inherit;">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Terms &amp; Privacy</h3>
+                <p>Terms of use, privacy policy &amp; disclaimer</p>
+              </div>
+              <div class="settings-control">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </div>
+            </a>
+            <a data-brand="operator-contact-href" href="mailto:info@flashcardfluencyroutes.com" class="settings-item" style="text-decoration:none;color:inherit;">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Contact</h3>
+                <p>Privacy requests &amp; general enquiries</p>
+              </div>
+              <div class="settings-control">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <nav class="bottom-nav">
+      <a href="index.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>Home</span>
+      </a>
+      <a href="FlashCards/index.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="14" rx="2"></rect>
+          <rect x="5" y="1" width="14" height="4" rx="1" opacity="0.5"></rect>
+          <line x1="8" y1="10" x2="16" y2="10"></line>
+          <line x1="8" y1="14" x2="13" y2="14"></line>
+        </svg>
+        <span>Flashcards</span>
+      </a>
+      <a href="ProgressDashboard/index.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        <span>Progress</span>
+      </a>
+      <a href="settings.html" class="nav-item active">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <script>
+    'use strict';
+
+    // ── IndexedDB helpers ──────────────────────────────────────
+    const DB_NAME = 'flashcard_app_db';
+    const DB_VERSION = 1;
+    const STORES = ['flashcards', 'user_progress', 'user_state'];
+
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror  = e => reject(e.target.error);
+        req.onupgradeneeded = e => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('flashcards'))
+            db.createObjectStore('flashcards',    { keyPath: 'WordID' });
+          if (!db.objectStoreNames.contains('user_progress'))
+            db.createObjectStore('user_progress', { keyPath: 'WordID' });
+          if (!db.objectStoreNames.contains('user_state'))
+            db.createObjectStore('user_state',    { keyPath: 'key' });
+        };
+      });
+    }
+
+    async function getAllFromStore(storeName) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx  = db.transaction([storeName], 'readonly');
+        const req = tx.objectStore(storeName).getAll();
+        req.onsuccess = () => resolve(req.result);
+        req.onerror   = () => reject(req.error);
+      });
+    }
+
+    async function clearStore(storeName) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx  = db.transaction([storeName], 'readwrite');
+        const req = tx.objectStore(storeName).clear();
+        req.onsuccess = () => resolve();
+        req.onerror   = () => reject(req.error);
+      });
+    }
+
+    async function bulkPutToStore(storeName, records) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx    = db.transaction([storeName], 'readwrite');
+        const store = tx.objectStore(storeName);
+        tx.oncomplete = resolve;
+        tx.onerror    = () => reject(tx.error);
+        for (const r of records) store.put(r);
+      });
+    }
+
+    function deleteEntireDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.deleteDatabase(DB_NAME);
+        req.onsuccess = resolve;
+        req.onerror   = () => reject(req.error);
+      });
+    }
+
+    // ── Status display ─────────────────────────────────────────
+    let statusTimer = null;
+
+    function showStatus(msg, type = 'success', duration = 4000) {
+      const el = document.getElementById('status_area');
+      el.textContent = msg;
+      el.className = type;
+      clearTimeout(statusTimer);
+      if (duration > 0) {
+        statusTimer = setTimeout(() => {
+          el.className = '';
+          el.textContent = '';
+        }, duration);
+      }
+    }
+
+    // ── Memory / storage estimate ──────────────────────────────
+    async function updateMemoryDisplay() {
+      const label = document.getElementById('memory-label');
+      const bar   = document.getElementById('memory-bar');
+
+      if (!('storage' in navigator && 'estimate' in navigator.storage)) {
+        label.textContent = 'Storage estimate not available in this browser';
+        return;
+      }
+      try {
+        const { usage, quota } = await navigator.storage.estimate();
+        const pct     = Math.min(100, Math.round((usage / quota) * 100));
+        const usedMB  = (usage / 1048576).toFixed(1);
+        const quotaMB = (quota  / 1048576).toFixed(0);
+        label.textContent = `${usedMB} MB used of ~${quotaMB} MB (${pct}%)`;
+        bar.style.width = pct + '%';
+        bar.className   = 'memory-bar' + (pct > 80 ? ' danger' : pct > 60 ? ' warning' : '');
+      } catch {
+        label.textContent = 'Unable to read storage estimate';
+      }
+    }
+
+    // ── Theme ──────────────────────────────────────────────────
+    const themeToggle = document.getElementById('theme-toggle');
+
+    function applyTheme(dark) {
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      localStorage.setItem('app_theme', dark ? 'dark' : 'light');
+      localStorage.setItem('theme_preference', dark ? 'dark' : 'light');
+    }
+
+    const currentTheme = localStorage.getItem('app_theme') ?? localStorage.getItem('theme_preference') ?? 'dark';
+    themeToggle.checked = currentTheme === 'dark';
+    themeToggle.addEventListener('change', () => applyTheme(themeToggle.checked));
+
+    // ── Re-import database ─────────────────────────────────────
+    document.getElementById('btn-reimport').addEventListener('click', async () => {
+      if (!confirm('Re-import vocabulary database from source?\n\nYour progress and notes will NOT be affected.')) return;
+
+      const btn = document.getElementById('btn-reimport');
+      btn.disabled = true;
+      btn.textContent = 'Working…';
+      showStatus('Fetching vocabulary data…', 'info', 0);
+
+      try {
+        const res = await fetch('/brand/flashcards.json');
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+
+        let data = await res.json();
+
+        // Support both array format and object-keyed format { "1": {...}, ... }
+        let records;
+        if (Array.isArray(data)) {
+          records = data;
+        } else {
+          records = Object.entries(data).map(([key, val]) =>
+            ({ ...val, WordID: parseInt(key, 10) })
+          );
+        }
+
+        await clearStore('flashcards');
+        await bulkPutToStore('flashcards', records);
+        showStatus(`Database re-imported — ${records.length} words loaded.`, 'success');
+        await updateMemoryDisplay();
+      } catch (err) {
+        showStatus('Import failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Import';
+      }
+    });
+
+    // ── Import custom word list ────────────────────────────────
+    document.getElementById('btn-import-custom').addEventListener('click', () => {
+      document.getElementById('file-import-custom').click();
+    });
+
+    document.getElementById('file-import-custom').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      e.target.value = '';
+
+      const btn = document.getElementById('btn-import-custom');
+      btn.disabled = true;
+      btn.textContent = 'Reading…';
+      showStatus('Reading file…', 'info', 0);
+
+      try {
+        // 1. Parse JSON
+        let raw;
+        try { raw = JSON.parse(await file.text()); }
+        catch { throw new Error('File could not be read — please check that you selected a valid word list file.'); }
+
+        // 2. Normalise to array (supports both array and object-keyed format)
+        let incoming;
+        if (Array.isArray(raw)) {
+          incoming = raw;
+        } else if (raw && typeof raw === 'object') {
+          if ('user_progress' in raw || 'user_state' in raw)
+            throw new Error('This looks like a user backup file. Use "Import User Data" to restore a backup.');
+          incoming = Object.entries(raw).map(([key, val]) => ({
+            ...val, WordID: Number.isInteger(val.WordID) ? val.WordID : parseInt(key, 10)
+          }));
+        } else {
+          throw new Error('Unexpected file format — please check that you selected a valid word list file.');
+        }
+
+        // 3. Validate records — require WordID, KoreanWord, WordDescription
+        let skipped = 0;
+        const valid = incoming.filter(r => {
+          const ok = typeof r.KoreanWord === 'string' && r.KoreanWord.trim() !== ''
+                   && typeof r.WordDescription === 'string' && r.WordDescription.trim() !== ''
+                   && Number.isFinite(parseInt(r.WordID, 10));
+          if (!ok) skipped++;
+          return ok;
+        });
+        if (valid.length === 0)
+          throw new Error('No valid records found. Each record needs WordID, KoreanWord, and WordDescription.');
+
+        // 4. Confirm
+        const skipNote = skipped > 0 ? `\n\n${skipped} record(s) will be skipped (missing required fields).` : '';
+        if (!confirm(
+          `Import ${valid.length} word(s) from "${file.name}"?\n\n` +
+          `These words will be added to your vocabulary database. ` +
+          `All words will be assigned new IDs starting at 10000 to avoid conflicts.` +
+          `${skipNote}\n\nThis cannot be undone.`
+        )) { showStatus('Import cancelled.', 'info'); return; }
+
+        // 5. Assign IDs in the custom range (10000+)
+        // Custom words always live at 10000+ so they never collide with the main
+        // vocabulary (1–9999) even if the server-hosted list grows, and successive
+        // custom imports stack without conflict.
+        btn.textContent = 'Importing…';
+        showStatus('Importing words…', 'info', 0);
+
+        const CUSTOM_ID_FLOOR = 10000;
+        const existing = await getAllFromStore('flashcards');
+        const maxCustomID = existing.reduce(
+          (m, r) => r.WordID >= CUSTOM_ID_FLOOR ? Math.max(m, r.WordID) : m,
+          CUSTOM_ID_FLOOR - 1
+        );
+        let nextID = maxCustomID + 1;
+
+        // Build a rename map for any incoming RouteName that collides with a name
+        // already in the DB. Rename keeps imported routes independent of server
+        // routes (and prior imports) so route-batch lookups stay unambiguous.
+        const existingRouteNames = new Set();
+        for (const c of existing) {
+          if (c.RouteName && c.RouteName !== '') existingRouteNames.add(c.RouteName);
+        }
+        const incomingRouteNames = new Set(
+          valid.map(r => r.RouteName).filter(n => n && n !== '')
+        );
+        const routeRenameMap = {};
+        for (const name of incomingRouteNames) {
+          if (!existingRouteNames.has(name)) continue;
+          let candidate = `${name} (MyList)`;
+          let n = 2;
+          while (existingRouteNames.has(candidate)) {
+            candidate = `${name} (MyList) ${n}`;
+            n++;
+          }
+          routeRenameMap[name] = candidate;
+          existingRouteNames.add(candidate);
+        }
+
+        const toInsert = valid.map(r => ({
+          ...r,
+          WordListName: 'My List',
+          RouteName: routeRenameMap[r.RouteName] ?? r.RouteName,
+          WordID: nextID++,
+        }));
+
+        // 6. Bulk insert
+        await bulkPutToStore('flashcards', toInsert);
+
+        // 7. Success feedback
+        const parts = [`Imported ${toInsert.length} word(s) (IDs ${toInsert[0].WordID}–${toInsert[toInsert.length - 1].WordID}).`];
+        if (skipped > 0) parts.push(`${skipped} record(s) skipped (missing required fields).`);
+        showStatus(parts.join(' '), 'success');
+        await updateMemoryDisplay();
+
+      } catch (err) {
+        showStatus('Import failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Import';
+      }
+    });
+
+    // ── Design custom word lists ──────────────────────────────
+    document.getElementById('btn-design-custom').addEventListener('click', () => {
+      window.open('https://www.flashcardfluencyroutes.com', '_blank', 'noopener,noreferrer');
+    });
+
+    // ── Export words list to CSV ───────────────────────────────
+    document.getElementById('btn-export-csv').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-export-csv');
+      btn.disabled = true;
+      btn.textContent = 'Exporting…';
+
+      try {
+        const [progress, flashcards] = await Promise.all([
+          getAllFromStore('user_progress'),
+          getAllFromStore('flashcards'),
+        ]);
+
+        const wordMap = {};
+        for (const fc of flashcards) wordMap[fc.WordID] = fc;
+
+        const completed = progress.filter(p => p.WordCompleted === '1');
+
+        if (completed.length === 0) {
+          showStatus('No completed words found to export.', 'info');
+          return;
+        }
+
+        const escCsv = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+        const rows = [
+          ['WordID', 'KoreanWord', 'WordDescription', 'PersonalNote', 'WordCompleted'].map(escCsv).join(','),
+          ...completed.map(p => {
+            const fc = wordMap[p.WordID] ?? {};
+            return [p.WordID, fc.KoreanWord, fc.WordDescription, p.PersonalNote, p.WordCompleted].map(escCsv).join(',');
+          })
+        ];
+
+        triggerDownload(rows.join('\r\n'), `korean_vocab_words_${dateStamp()}.csv`, 'text/csv');
+        showStatus(`Exported ${completed.length} completed word(s) to CSV.`, 'success');
+      } catch (err) {
+        showStatus('Export failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Export';
+      }
+    });
+
+    // ── Export user data (JSON) ────────────────────────────────
+    document.getElementById('btn-export-user').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-export-user');
+      btn.disabled = true;
+      btn.textContent = 'Exporting…';
+
+      try {
+        const [userProgress, userState] = await Promise.all([
+          getAllFromStore('user_progress'),
+          getAllFromStore('user_state'),
+        ]);
+
+        // Capture relevant localStorage keys
+        const lsData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('app_')) lsData[k] = localStorage.getItem(k);
+        }
+
+        const payload = {
+          exportedAt: new Date().toISOString(),
+          version: 1,
+          user_progress: userProgress,
+          user_state: userState,
+          localStorage: lsData,
+        };
+
+        triggerDownload(JSON.stringify(payload, null, 2), `korean_vocab_backup_${dateStamp()}.json`, 'application/json');
+        showStatus('User data exported successfully.', 'success');
+      } catch (err) {
+        showStatus('Export failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Export';
+      }
+    });
+
+    // ── Import user data (JSON) ────────────────────────────────
+    document.getElementById('btn-import-user').addEventListener('click', () => {
+      document.getElementById('file-import-user').click();
+    });
+
+    document.getElementById('file-import-user').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      e.target.value = '';
+
+      const btn = document.getElementById('btn-import-user');
+      btn.disabled = true;
+      btn.textContent = 'Importing…';
+      showStatus('Reading backup file…', 'info', 0);
+
+      try {
+        const text    = await file.text();
+        let payload;
+        try { payload = JSON.parse(text); }
+        catch { throw new Error('File could not be read — please check that you selected a valid user data backup file.'); }
+
+        // Detect a custom-word-list file picked by mistake (array form, or
+        // object keyed by integer with flashcard-shaped records) and point
+        // the user at the right button instead of failing generically.
+        const looksLikeWordList =
+          Array.isArray(payload) ||
+          (payload && typeof payload === 'object'
+            && !('user_progress' in payload) && !('user_state' in payload)
+            && Object.values(payload).some(v => v && typeof v === 'object' && 'KoreanWord' in v));
+        if (looksLikeWordList) {
+          throw new Error('This looks like a custom word list file. Use "Import Custom Word List" to add these words to your vocabulary.');
+        }
+
+        if (!payload || typeof payload !== 'object' || !payload.user_progress || !payload.user_state) {
+          throw new Error('This file does not look like a user data backup (missing user_progress / user_state). Please verify you selected a backup file exported from this app, not a custom word list file.');
+        }
+
+        if (!confirm(`Import backup from ${payload.exportedAt ?? 'unknown date'}?\n\nThis will overwrite your current progress and settings.`)) {
+          showStatus('Import cancelled.', 'info');
+          return;
+        }
+
+        await clearStore('user_progress');
+        await clearStore('user_state');
+
+        if (payload.user_progress.length > 0)
+          await bulkPutToStore('user_progress', payload.user_progress);
+        if (payload.user_state.length > 0)
+          await bulkPutToStore('user_state', payload.user_state);
+
+        // Restore localStorage keys (only app_* prefixed keys written at export time)
+        if (payload.localStorage) {
+          for (const [k, v] of Object.entries(payload.localStorage)) {
+            if (typeof k === 'string' && k.startsWith('app_'))
+              localStorage.setItem(k, v);
+          }
+        }
+
+        showStatus(`Import complete — ${payload.user_progress.length} progress records restored.`, 'success');
+
+        // Re-apply theme in case it changed
+        const savedTheme = localStorage.getItem('app_theme');
+        themeToggle.checked = savedTheme === 'dark';
+        applyTheme(themeToggle.checked);
+        await updateMemoryDisplay();
+      } catch (err) {
+        showStatus('Import failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Import';
+      }
+    });
+
+    // ── Reset application ──────────────────────────────────────
+    document.getElementById('btn-reset').addEventListener('click', async () => {
+      if (!confirm('Reset all user progress and settings?\n\nThis will delete:\n• All learning progress\n• Personal notes\n• App settings\n\nVocabulary data will be kept.\n\nThis action cannot be undone.')) return;
+      if (!confirm('Are you sure? All progress will be permanently deleted.')) return;
+
+      const btn = document.getElementById('btn-reset');
+      btn.disabled = true;
+      btn.textContent = 'Resetting…';
+      showStatus('Resetting…', 'info', 0);
+
+      try {
+        await clearStore('user_progress');
+        await clearStore('user_state');
+        localStorage.removeItem('app_theme');
+        themeToggle.checked = false;
+        applyTheme(false);
+        showStatus('Application reset. All progress has been cleared.', 'success');
+        await updateMemoryDisplay();
+      } catch (err) {
+        showStatus('Reset failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Reset';
+      }
+    });
+
+    // ── Clear memory and exit ──────────────────────────────────
+    document.getElementById('btn-clear-exit').addEventListener('click', async () => {
+      if (!confirm('Clear ALL app data and exit?\n\nThis will permanently delete:\n• All vocabulary data\n• All progress and notes\n• All app settings\n\nThis action cannot be undone.')) return;
+      if (!confirm('Last warning — everything will be deleted. Continue?')) return;
+
+      const btn = document.getElementById('btn-clear-exit');
+      btn.disabled = true;
+      btn.textContent = 'Clearing…';
+      showStatus('Clearing all data…', 'info', 0);
+
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        await deleteEntireDB();
+
+        // Attempt to close the window; fall back to blank page
+        window.close();
+        setTimeout(() => { window.location.href = 'about:blank'; }, 300);
+      } catch (err) {
+        showStatus('Clear failed: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Clear';
+      }
+    });
+
+    // ── Utilities ──────────────────────────────────────────────
+    function triggerDownload(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function dateStamp() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    // ── Init ───────────────────────────────────────────────────
+    updateMemoryDisplay();
+  </script>
+  <script src="admin_message.js"></script>
+  <script type="module">
+    import { initBrand } from './brand_loader.js';
+    initBrand();
+  </script>
+</body>
+</html>

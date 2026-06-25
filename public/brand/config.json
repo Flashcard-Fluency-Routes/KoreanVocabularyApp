@@ -1,0 +1,25 @@
+{
+  "brandName": "Korean Vocabulary",
+  "brandNameFont": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+  "colors": {
+    "primary":   "#0a2342",
+    "secondary": "#4a7a9d",
+    "accent":    "#2ca58d",
+    "text":      "#343a40",
+    "lightBg":   "#f8f9fa",
+    "divider":   "#ced4da"
+  },
+  "assets": {
+    "logo":     "logo.png",
+    "favicon":  "favicon.png",
+    "vehicles": [
+      "vehicle1.png",
+      "vehicle2.png",
+      "vehicle3.png"
+    ]
+  },
+  "operator": {
+    "name":         "Your App Name",
+    "privacyEmail": "info@YourDomainName.com"
+  }
+}

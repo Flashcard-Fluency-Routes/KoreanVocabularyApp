@@ -1,0 +1,26 @@
+[
+    {
+        "WordID": 1,
+        "KoreanWord": "안녕",
+        "InContextSentence": "안녕하세요",
+        "SentenceDescription": "Hello",
+        "SentenceHonorifics": "Polite",
+        "WordDescription": "Peace",
+        "PartOfSpeech": "Noun",
+        "WordCategory": "Introduction",
+        "WordListName": "Welcome",
+        "RouteName": "Level-1",
+        "RouteNameSeq": 1,
+        "Neighborhood": "Jongno",
+        "PlaceOfInterestNameEng": "Gwangjang Market",
+        "PlaceOfInterestNameKor": "광장시장",
+        "Latitude": 37.5701232830475,
+        "Longitude": 126.999564513257,
+        "POICategory": "shopping",
+        "NearestMetro": "Jongno 3-ga",
+        "NearestMetroCode": 534,
+        "AudioURL": "Hello_Korean.m4a",
+        "VideoURL": "https://youtu.be/3s2wv8Yj_-Y",
+        "DistanceToMetro": 0.5
+    }
+]

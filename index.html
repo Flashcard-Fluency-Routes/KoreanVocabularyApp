@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{brand}</title>
+  <link rel="icon" href="brand/favicon.png">
+  <link rel="stylesheet" href="styles.css">
+  </head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <div class="container header-content">
+        <div class="logo" data-brand="name">Korean Vocabulary</div>
+        <div class="user-greeting">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="user-icon">
+            <circle cx="12" cy="8" r="5"></circle>
+            <path d="M20 21a8 8 0 1 0-16 0"></path>
+          </svg>
+          <span id="welcome-text">Welcome</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="top-row">
+        <section class="balance-section">
+          <h2 class="section-title">Completed Words</h2>
+          <p id="balance-amount" class="balance-amount">00</p>
+          <p id="balance-change" class="balance-change">00 (Today)</p>
+        </section>
+        <section class="brand-section">
+          <img alt="" class="brand-image" data-brand="logo" onerror="this.style.display='none'">
+        </section>
+      </div>
+
+      <section class="quick-actions-section">
+        <div class="card">
+          <h2 class="section-title">Quick Actions</h2>
+          <div class="quick-actions-grid">
+            <a href="FlashCards/index.html" class="action-button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-play">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <span>Start / Select</span>
+            </a>
+            <a href="FlashCards/flashcards.html" class="action-button">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="14" rx="2"></rect>
+              <rect x="5" y="1" width="14" height="4" rx="1" opacity="0.5"></rect>
+              <line x1="8" y1="10" x2="16" y2="10"></line>
+              <line x1="8" y1="14" x2="13" y2="14"></line>
+              </svg>
+              <span>Flash cards</span>
+            </a>
+            <a href="MetroLineSelector/index.html" class="action-button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit">
+                <circle cx="12" cy="12" r="4"></circle><line x1="1.05" y1="12" x2="7" y2="12"></line><line x1="17.01" y1="12" x2="22.96" y2="12"></line>
+              </svg>
+              <span>Metro Explorer</span>
+            </a>
+            <a href="ProgressDashboard/index.html" class="action-button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <span>Progress Dashboard</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="transactions-section">
+        <h2 class="section-title">Featured</h2>
+        <div id="expense-cards-container">
+
+        </div>
+      </section>
+
+      <section class="transactions-section" id="my-list-section" style="display:none">
+        <h2 class="section-title">My List</h2>
+        <div id="my-list-container"></div>
+      </section>
+
+    </main>
+
+    <footer>
+
+    </footer>
+    
+    <nav class="bottom-nav">
+      <a href="index.html" class="nav-item active">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Home</span>
+      </a>
+      <a href="FlashCards/flashcards.html" class="nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="14" rx="2"></rect>
+            <rect x="5" y="1" width="14" height="4" rx="1" opacity="0.5"></rect>
+            <line x1="8" y1="10" x2="16" y2="10"></line>
+            <line x1="8" y1="14" x2="13" y2="14"></line>
+          </svg>
+          <span>Flashcards</span>
+      </a>
+      <a href="ProgressDashboard/index.html" class="nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span>Progress Dashboard</span>
+      </a>
+      <a href="settings.html" class="nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Settings</span>
+      </a>
+  </nav>
+  </div>
+  <div id="privacy-notice" class="privacy-notice" style="display:none" role="region" aria-label="Privacy notice">
+    <p>Your learning data is stored only in your browser. No personal information is collected.
+      <a href="terms-and-privacy.html">Privacy Policy</a>
+    </p>
+    <button class="privacy-notice__dismiss" id="privacy-notice-dismiss">Got it</button>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+    const welcomeEl = document.getElementById('welcome-text');
+    if (localStorage.getItem('hasVisited')) {
+      welcomeEl.textContent = 'Welcome Back';
+    } else {
+      welcomeEl.textContent = 'Welcome';
+      localStorage.setItem('hasVisited', '1');
+    }
+
+    if (!localStorage.getItem('privacy_notice_seen')) {
+      document.getElementById('privacy-notice').style.display = 'flex';
+      document.getElementById('privacy-notice-dismiss').addEventListener('click', function () {
+        localStorage.setItem('privacy_notice_seen', '1');
+        document.getElementById('privacy-notice').style.display = 'none';
+      });
+    }
+  </script>
+  <script type="module">
+    import { initBrand } from './brand_loader.js';
+    initBrand();
+  </script>
+  <script type="module">
+    import { bootstrap } from './FlashCards/init/app_bootstrap.js';
+    import { getAllProgress } from './FlashCards/repositories/progress_repository.js';
+    import { getAllFlashcards } from './FlashCards/repositories/flashcard_repository.js';
+    import { saveFilters, getRouteMode, saveRouteMode } from './FlashCards/services/filter_service.js';
+    import { getState, setState } from './FlashCards/repositories/state_repository.js';
+
+    function esc(str) {
+        const d = document.createElement('div');
+        d.textContent = (str || '').trim();
+        return d.innerHTML;
+    }
+
+    async function restorePausedRoute() {
+        const paused = await getState('paused_route_mode');
+        if (paused) {
+            await saveRouteMode(paused);
+            await setState('paused_route_mode', null);
+        }
+    }
+
+    async function loadStats() {
+        const progress = await getAllProgress();
+        const today = new Date().toISOString().slice(0, 10);
+        const total = progress.filter(p => p.WordCompleted === '1').length;
+        const todayCount = progress.filter(p => p.WordCompletedDate === today).length;
+        document.getElementById('balance-amount').textContent = total;
+        document.getElementById('balance-change').textContent = `${todayCount} (Today)`;
+    }
+
+    async function launchFeaturedRoute(routeName) {
+        const current = await getRouteMode();
+        if (current.active) {
+            await setState('paused_route_mode', current);
+        }
+        await saveRouteMode({ active: false });
+        await saveFilters({
+            WordCategory: [], WordListName: [], RouteName: [routeName],
+            RouteNameSeq: [], Neighborhood: [], PlaceOfInterestNameEng: [],
+            POICategory: [], NearestMetro: [], NearestMetroCode: [], NearestMetroLine: []
+        });
+        window.location.href = 'FlashCards/flashcards.html';
+    }
+
+    async function loadFeaturedRoutes() {
+        const allCards = await getAllFlashcards();
+        const routeNames = [...new Set(
+            allCards
+                .filter(c => c.WordListName && c.WordListName.includes('Featured') && c.RouteName)
+                .map(c => c.RouteName)
+        )].sort();
+
+        const container = document.getElementById('expense-cards-container');
+        if (routeNames.length === 0) {
+            container.innerHTML = '<p style="color:var(--secondary-blue);font-size:0.9rem;padding:0.5rem 0;">No featured routes available.</p>';
+            return;
+        }
+
+        container.innerHTML = routeNames.map(name =>
+            `<button class="featured-route-btn" data-route="${esc(name)}">${esc(name)}</button>`
+        ).join('');
+
+        container.querySelectorAll('.featured-route-btn').forEach(btn => {
+            btn.addEventListener('click', () => launchFeaturedRoute(btn.dataset.route));
+        });
+    }
+
+    async function launchMyList() {
+        const current = await getRouteMode();
+        if (current.active) {
+            await setState('paused_route_mode', current);
+        }
+        await saveRouteMode({ active: false });
+        await saveFilters({
+            WordCategory: [], WordListName: ['My List'], RouteName: [],
+            RouteNameSeq: [], Neighborhood: [], PlaceOfInterestNameEng: [],
+            POICategory: [], NearestMetro: [], NearestMetroCode: [], NearestMetroLine: []
+        });
+        window.location.href = 'FlashCards/flashcards.html';
+    }
+
+    async function loadMyList() {
+        const allCards = await getAllFlashcards();
+        const customCards = allCards.filter(c => c.WordID >= 10000);
+        if (customCards.length === 0) return;
+
+        const container = document.getElementById('my-list-container');
+        container.innerHTML = `<button class="featured-route-btn" id="btn-my-list">${customCards.length} words</button>`;
+        document.getElementById('btn-my-list').addEventListener('click', launchMyList);
+        document.getElementById('my-list-section').style.display = '';
+    }
+
+    async function init() {
+        await bootstrap();
+        await restorePausedRoute();
+        loadStats();
+        loadFeaturedRoutes();
+        loadMyList();
+    }
+
+    init();
+  </script>
+  <script src="admin_message.js"></script>
+  </body>
+</html>

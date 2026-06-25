@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Guide - {brand}</title>
+  <link rel="icon" href="brand/favicon.png">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    (function () {
+      const t = localStorage.getItem('app_theme');
+      document.documentElement.setAttribute('data-theme', t || 'dark');
+      window.addEventListener('storage', function (e) {
+        if (e.key === 'app_theme') {
+          document.documentElement.setAttribute('data-theme', e.newValue === 'dark' ? 'dark' : 'light');
+        }
+      });
+    })();
+  </script>
+</head>
+<body>
+  <div class="app-container">
+
+    <header class="header">
+      <div class="container header-content">
+        <div class="logo" data-brand="name">Korean Vocabulary</div>
+        <div class="user-greeting">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="user-icon">
+            <circle cx="12" cy="8" r="5"></circle>
+            <path d="M20 21a8 8 0 1 0-16 0"></path>
+          </svg>
+          <span>User Guide</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+
+      <!-- ── Overview ──────────────────────────────────────────── -->
+      <div class="settings-group">
+        <div class="settings-group-title">Overview</div>
+        <div class="card">
+          <div class="settings-menu">
+
+            <div class="settings-item">
+              <div class="settings-content">
+                <h3>Fun While Learning</h3>
+                <p>The purpose of this app is to make learning Korean vocabulary fun and enjoyable.</p>
+                <p>There is no scientific evidence that this method is more effective than other methods, but the hope is that the interactive nature of this app will make it more engaging and encourage more consistent study habits, which is a very important factor in language learning success.</p>
+                <p>The idea is that words with example sentences and descriptions etc, are placed virtually at locations throughout the city, as determind by skilled and often native speakers of the Korean language.</p>
+                <p>Words are presented at their specific location to provide context for their usage. Some words may have more information available such as an audio clip for pronunciations and explanatory video content.</p>
+                <p>Words can also be presented in a specific order based on pre-determined selectable routes, although for a fast paced review, category selection without displaying routes is possible.</p>
+                <p>As you learn new words, you can track your progress as well as add comments to each word.</p>
+                <p>You will also be able to download your "Marked complete" vocabulary lists for offline study and your personal notes will be included.</p>
+                <p>As a secondary benefit, as you travel around the city in the virtual Metro, the app will at the same time by virtue of its design provide you with spacial knowledge about the Seoul Metro system and give you a sense of the layout of the city and distances involved when travelling around the city.</p>
+                <p>We have mapped over 350 Metro stations across Seoul of which there are 79 on Line 2 that render animations as you pass through them when travelling virtually between locations. The value of the animations include revealing which lines connect at the specific Line 2 metro station as indicated one each Metro train label.</p>
+                <p>If you eventually travel to Seoul at some point in the future, you will have a good sense of the city's layout and how to navigate it.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Getting Started ─────────────────────────────────── -->
+      <div class="settings-group">
+        <div class="settings-group-title">Getting Started</div>
+        <div class="card">
+          <div class="settings-menu">
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Starting a Study Session</h3>
+                <p>Tap <strong>Start / Select</strong> on the Home screen to select options to begin a flashcard session. For Routes, pre-selected words are drawn from the full vocabulary list and presented in a specific order. For categories, words are selected based on the category of your choice.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="4" width="20" height="14" rx="2"></rect>
+                  <rect x="5" y="1" width="14" height="4" rx="1" opacity="0.5"></rect>
+                  <line x1="8" y1="10" x2="16" y2="10"></line>
+                  <line x1="8" y1="14" x2="13" y2="14"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Flashcard View</h3>
+                <p>Each card shows the Korean word, an <strong>example</strong> sentence and the English meaning and other relevant information. Mark each card as <strong>Completed</strong> or <strong>Review Again</strong> to track your learning.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Marking Words Complete</h3>
+                <p>Once you feel confident with a word and have marked it as <strong>Completed</strong>, completed words are tracked on your Progress Dashboard and can be exported in a CSV file.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metro Station Navigation ──────────────────────────────────────── -->
+      <div class="settings-group">
+        <div class="settings-group-title">Metro Station Navigation</div>
+        <div class="card">
+          <div class="settings-menu">
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+                  <line x1="9" y1="3" x2="9" y2="18"></line>
+                  <line x1="15" y1="6" x2="15" y2="21"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Follow a Route</h3>
+                <p>When following a Route, you do not have control of which words appear or in which order. This is determined by the Route being followed.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                  <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Category Selection</h3>
+                <p>Displays the words linked to the category that you have selected</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <circle cx="12" cy="12" r="6"></circle>
+                  <circle cx="12" cy="12" r="2"></circle>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Word Game</h3>
+                <p>When playing the Word Game, words are pre-selected and your job is to find the words at their location and use the clues provided as an aid.</p>
+                <p>A separate button will appear on each card which allows you to submit if you think it is a correct word. If incorrect, sometimes you may get a further clue if provided by the designer of the specific word game.</p>
+                <p>Before starting a Word Game, make sure you have selected a category.</p>
+                <p>Once a Word Game has been started, you may come back and change categories to go to new locations or you may use the Metro Explorer to navigate to new Flash Cards.</p>
+                <p>A help button on each card provides additional assistance in terms of distance to the correct word locations.</p>
+                <p>A Word Game Summary Flash Card will be displayed showing your progress and if you have completed all the words or not.</p>
+                <p>How few cards did you view or how few Help requests did you make before completing the game.</p>
+                <p>If you spot words along the way that you feel comfortable with, you can also mark them as completed, and they will be tracked on your Progress Dashboard.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="3" width="16" height="16" rx="2"></rect>
+                  <path d="M4 11h16"></path>
+                  <path d="M12 3v8"></path>
+                  <circle cx="8.5" cy="15.5" r="1.5"></circle>
+                  <circle cx="15.5" cy="15.5" r="1.5"></circle>
+                  <path d="M7 21l2-3"></path>
+                  <path d="M17 21l-2-3"></path>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Metro Station Animation</h3>
+                <p>The Metro Station Animations appear only when a Route is being followed, and also only for Line 2 Departures and Arrivals, as Line 2 is the most notable Line in the Seoul Metro System and the area of focus for this app.</p>
+                <p>As you virtually pass through each station on Line 2, the animation will play showing the station name and a stylised map representation of the station. This is an opportunity to have a quick glance at the station metrics and overall progress metrics in the table below. Make a mental note of this station if you have further words to complete here and you can come back later.</p>
+                <p>Seoul Subway Line 2 is the best tourist line as it loops through major districts and connects key attractions.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ── Site Navigation ──────────────────────────────────────── -->
+      <div class="settings-group">
+        <div class="settings-group-title">Site Navigation</div>
+        <div class="card">
+          <div class="settings-menu">
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Home</h3>
+                <p>Displays your total completed words count and today's progress. Use the Quick Actions buttons to jump to the most important sections quickly.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10"></line>
+                  <line x1="12" y1="20" x2="12" y2="4"></line>
+                  <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Progress Dashboard</h3>
+                <p>See a visual respresentation of your learning history. The Bubble Chart shows overall vocabulary progress and the location of the words on the map..</p>
+                <p>Checkboxes allow for showing your preference between Completed words, Seen Words and Never seen words.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Settings</h3>
+                <p>Manage your data, toggle dark mode, import or export backups, and access danger-zone options like resetting all progress.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Personal Notes ──────────────────────────────────── -->
+      <div class="settings-group">
+        <div class="settings-group-title">Personal Notes</div>
+        <div class="card">
+          <div class="settings-menu">
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Adding Notes to Words</h3>
+                <p>On any flashcard you can tap the note icon to write a personal note — a mnemonic, example sentence, or anything helpful. Notes are saved automatically and included in your CSV file export.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Data & Backup ───────────────────────────────────── -->
+      <div class="settings-group">
+        <div class="settings-group-title">Data &amp; Backup</div>
+        <div class="card">
+          <div class="settings-menu">
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Exporting a Backup</h3>
+                <p>Go to <strong>Settings → Export User Data</strong> to download a backup of all your progress and settings. Store it somewhere safe to restore later or move to another browser. If you do not export your own data, it will be lost.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Restoring a Backup</h3>
+                <p>Go to <strong>Settings → Import User Data</strong> and select your backup file. This overwrites current progress, so export first if needed.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="1 4 1 10 7 10"></polyline>
+                  <path d="M3.51 15a9 9 0 1 0 .49-3.51"></path>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Re-importing the Vocabulary Database</h3>
+                <p>The word list that is provided by the creator of the word list could be updated at any point. If the word list is updated, use <strong>Settings → Re-import Database</strong> to reload the latest vocabulary and access the new words. Your personal progress and notes are not affected.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Exporting Completed Words as CSV</h3>
+                <p>Go to <strong>Settings → Export My Words List</strong> to download a CSV of every word you've marked complete, including your personal notes. You can open and view this type of file in your favorite spreadsheet application.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Design Custom Word Lists</h3>
+                <p> You can study words beyond the built-in vocabulary, by creating your own custom word lists at <strong>flashcardfluencyroutes.com</strong> and import them into the app using <strong>Settings → Import Custom Word List</strong>.</p>
+                <p>Custom word lists use the same format as the main vocabulary database, so your imported words, are fully compatible with flashcards, progress tracking, and notes and will have their own button of the front page of the app.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Privacy & Data Requests ──────────────────────────── -->
+      <div class="settings-group">
+        <div class="settings-group-title">Privacy &amp; Data Requests</div>
+        <div class="card">
+          <div class="settings-menu">
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>What Data Is Held About You</h3>
+                <p><span data-brand="operator-name">Flashcard Fluency Routes</span> holds <strong>no server-side user data</strong>. Your learning progress, personal notes, and preferences are stored exclusively in your browser's local storage and never leave your device.</p>
+                <p>Cloudflare, the CDN used to deliver the app, retains standard web access logs (IP address, browser type, pages requested) for approximately 30 days for security purposes. <span data-brand="operator-name">Flashcard Fluency Routes</span> does not receive or store this data.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                  <path d="M10 11v6"></path><path d="M14 11v6"></path>
+                  <path d="M9 6V4h6v2"></path>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Delete Your Data Right Now</h3>
+                <p>You do not need to contact anyone to delete your local data. Go to <strong>Settings → Data Management → Clear Memory &amp; Exit</strong> to immediately and permanently erase all progress, notes, and preferences stored in your browser.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Submit a Privacy Request</h3>
+                <p>To exercise any right under GDPR, POPIA, CCPA, or any other applicable law — including access, erasure, portability, or objection — email <a data-brand="operator-privacy-email" href="mailto:info@flashcardfluencyroutes.com">info@flashcardfluencyroutes.com</a> with:</p>
+                <p>1. The type of request (e.g. "delete my data", "what do you hold about me").<br>
+                   2. A brief description of when and how you used the app (device, country, approximate dates).<br>
+                   3. Your contact email for the response.</p>
+                <p>No account exists, so these details confirm your identity without requiring excessive personal information.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Response Timeline</h3>
+                <p>You will receive an acknowledgement within a few days. A full response will follow within <strong>30 days</strong> (or sooner, as required by your local law — GDPR allows up to 1 month, CCPA allows up to 45 days, South Korean PIPA requires 10 days).</p>
+                <p>Responses are provided free of charge.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Escalating to a Regulator</h3>
+                <p>If you are unsatisfied with the response to your request, you have the right to escalate to the privacy regulator in your country. The full list of authorities — ICO (UK), PIPC (South Korea), ANPD (Brazil), OAIC (Australia), and others — is in the <a href="terms-and-privacy.html">Privacy Policy</a>.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tips ────────────────────────────────────────────── -->
+      <div class="settings-group">
+        <div class="settings-group-title">Tips</div>
+        <div class="card">
+          <div class="settings-menu">
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Dark mode</h3>
+                <p>Toggle dark mode under <strong>Settings → App Info &amp; Settings</strong>. Your preference is saved and applied automatically on your next visit.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Important Notice ───────────────────────────────── -->
+      <div class="settings-group">
+        <div class="settings-group-title">Important Notice</div>
+        <div class="card">
+          <div class="settings-menu">
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>All data stays on your device</h3>
+                <p>Everything is stored in your browser's memory — nothing is sent to a server. Use the backup export before clearing your browser data.</p>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <div class="settings-content">
+                <h3>Why do I not need to log in?</h3>
+                <p>This app runs entirely in your browser and does not use any accounts or dynamic backend servers collecting clicks and data. All your progress, notes, and settings are saved directly to your device using your browser's local storage. This means there is no sign-up, no password to remember, and no data ever leaves your device — but it also means your data is tied to the specific browser you use. If you switch browsers or clear your browser data, use the backup export first to avoid losing your progress.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <nav class="bottom-nav">
+      <a href="index.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>Home</span>
+      </a>
+      <a href="FlashCards/index.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="14" rx="2"></rect>
+          <rect x="5" y="1" width="14" height="4" rx="1" opacity="0.5"></rect>
+          <line x1="8" y1="10" x2="16" y2="10"></line>
+          <line x1="8" y1="14" x2="13" y2="14"></line>
+        </svg>
+        <span>Flashcards</span>
+      </a>
+      <a href="ProgressDashboard/index.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        <span>Progress</span>
+      </a>
+      <a href="settings.html" class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+  </div>
+  <script type="module">
+    import { initBrand } from './brand_loader.js';
+    initBrand();
+  </script>
+</body>
+</html>

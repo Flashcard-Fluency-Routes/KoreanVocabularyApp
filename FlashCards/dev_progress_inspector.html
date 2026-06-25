@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Inspector — Dev Tool</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface2: #22263a;
+            --border: #2e3350;
+            --text: #e2e4f0;
+            --text-dim: #6b7094;
+            --accent: #5c7cfa;
+            --green: #40c057;
+            --orange: #fd7e14;
+            --red: #fa5252;
+            --yellow: #ffd43b;
+        }
+
+        body {
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 13px;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Header ───────────────────────────────────────────── */
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        header h1 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+        }
+        header .subtitle {
+            font-size: 11px;
+            color: var(--text-dim);
+            flex: 1;
+        }
+        .btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .btn:hover { border-color: var(--accent); background: #1e2240; }
+        .btn-accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .btn-accent:hover { background: #4a6cf7; }
+
+        /* ── Summary strip ───────────────────────────────────── */
+        #summary {
+            display: flex;
+            gap: 12px;
+            padding: 14px 20px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+        }
+        .stat-pill {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 16px;
+            min-width: 120px;
+        }
+        .stat-pill .label {
+            font-size: 10px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+        }
+        .stat-pill .value {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .stat-pill.green .value { color: var(--green); }
+        .stat-pill.orange .value { color: var(--orange); }
+        .stat-pill.blue .value { color: var(--accent); }
+        .stat-pill.yellow .value { color: var(--yellow); }
+        .stat-pill.red .value { color: var(--red); }
+
+        /* ── Filter bar ──────────────────────────────────────── */
+        #filter-bar {
+            display: flex;
+            gap: 8px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        #filter-bar span { color: var(--text-dim); font-size: 11px; margin-right: 4px; }
+        .filter-btn {
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 11px;
+            transition: all 0.15s;
+        }
+        .filter-btn:hover { color: var(--text); border-color: var(--text-dim); }
+        .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        /* ── Sort info ───────────────────────────────────────── */
+        #sort-info {
+            padding: 6px 20px;
+            font-size: 11px;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── Table ───────────────────────────────────────────── */
+        #table-wrap {
+            overflow-x: auto;
+            padding: 0 20px 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 12px;
+        }
+        th {
+            background: var(--surface);
+            color: var(--text-dim);
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+            user-select: none;
+        }
+        th.sortable { cursor: pointer; }
+        th.sortable:hover { color: var(--text); }
+        th.sort-asc::after { content: ' ▲'; color: var(--accent); }
+        th.sort-desc::after { content: ' ▼'; color: var(--accent); }
+        tr:nth-child(even) td { background: #13161f; }
+        td {
+            padding: 7px 12px;
+            border-bottom: 1px solid #1c2035;
+            vertical-align: middle;
+            max-width: 220px;
+        }
+        td.mono { font-family: inherit; }
+        tr:hover td { background: #1b1f30 !important; }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .badge-green { background: #1a3a22; color: var(--green); }
+        .badge-orange { background: #3a2810; color: var(--orange); }
+        .badge-red { background: #3a1414; color: var(--red); }
+        .badge-blue { background: #1a2450; color: var(--accent); }
+        .badge-dim { background: var(--surface2); color: var(--text-dim); }
+        .badge-yellow { background: #3a3010; color: var(--yellow); }
+
+        .check { color: var(--green); font-size: 14px; }
+        .dash { color: #2e3350; }
+
+        .note-cell {
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--yellow);
+            font-style: italic;
+        }
+        .note-cell:empty::before { content: '—'; color: #2e3350; font-style: normal; }
+
+        .word-kor { font-size: 15px; color: #a5b4fc; }
+        .word-eng { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+        /* ── State section ───────────────────────────────────── */
+        #state-section {
+            margin: 0 20px 40px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #state-section summary {
+            padding: 10px 16px;
+            background: var(--surface);
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-dim);
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #state-section summary::before { content: '▶'; font-size: 10px; transition: transform 0.2s; }
+        #state-section[open] summary::before { transform: rotate(90deg); }
+        #state-section summary:hover { color: var(--text); }
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg);
+        }
+        .state-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+        }
+        .state-card .state-key {
+            font-size: 11px;
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .state-card pre {
+            font-family: inherit;
+            font-size: 11px;
+            color: var(--text);
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* ── Error / empty states ─────────────────────────────── */
+        #error-msg {
+            display: none;
+            margin: 40px 20px;
+            padding: 20px;
+            background: #3a1414;
+            border: 1px solid var(--red);
+            border-radius: 8px;
+            color: var(--red);
+            font-size: 13px;
+        }
+        #empty-msg {
+            display: none;
+            margin: 40px 20px;
+            color: var(--text-dim);
+            text-align: center;
+            padding: 40px;
+        }
+
+        /* ── Loading ──────────────────────────────────────────── */
+        #loading {
+            padding: 40px 20px;
+            color: var(--text-dim);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Progress Inspector</h1>
+    <span class="subtitle">Dev tool · reads flashcard_app_db directly · not part of the production app</span>
+    <button class="btn" id="btn-export">Export JSON</button>
+    <button class="btn btn-accent" id="btn-refresh">↻ Refresh</button>
+</header>
+
+<div id="summary"></div>
+
+<div id="filter-bar">
+    <span>Filter:</span>
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="completed">Completed</button>
+    <button class="filter-btn" data-filter="seen">Seen ≥ 1</button>
+    <button class="filter-btn" data-filter="note">Has Note</button>
+    <button class="filter-btn" data-filter="sponsor">Sponsor Seen</button>
+    <button class="filter-btn" data-filter="route">Metro Visits ≥ 1</button>
+</div>
+
+<div id="sort-info">Sorted by: WordID ascending · click column headers to sort</div>
+
+<div id="loading">Loading data from IndexedDB…</div>
+<div id="error-msg"></div>
+<div id="empty-msg">No progress records found. Open the app and interact with some cards first.</div>
+
+<div id="table-wrap" style="display:none">
+    <table id="progress-table">
+        <thead>
+            <tr>
+                <th class="sortable" data-col="WordID">ID</th>
+                <th>Korean Word</th>
+                <th class="sortable" data-col="WordSeenQty">Seen #</th>
+                <th class="sortable" data-col="WordCompleted">Done</th>
+                <th class="sortable" data-col="SponsorSeen">Sponsor</th>
+                <th class="sortable" data-col="MetroVisitsQty">Metro Visits</th>
+                <th class="sortable" data-col="NeighborhoodVisitedQty">Nbhd Visits</th>
+                <th class="sortable" data-col="AudioPlayback">Audio Plays</th>
+                <th>Metro Station</th>
+                <th>Neighborhood</th>
+                <th>Note</th>
+            </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+    </table>
+</div>
+
+<details id="state-section">
+    <summary>user_state store (app settings &amp; route mode)</summary>
+    <div class="state-grid" id="state-grid"></div>
+</details>
+
+<script>
+    const DB_NAME = 'flashcard_app_db';
+
+    // ── State ────────────────────────────────────────────────
+    let allRows = [];
+    let flashcardMap = {};
+    let currentFilter = 'all';
+    let sortCol = 'WordID';
+    let sortDir = 'asc';
+
+    // ── DB helpers ───────────────────────────────────────────
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(DB_NAME);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+            req.onupgradeneeded = () => {
+                req.transaction.abort();
+                reject(new Error('Database not found. Open the flashcard app first to initialise the database.'));
+            };
+        });
+    }
+
+    function getAllFromStore(db, storeName) {
+        return new Promise((resolve, reject) => {
+            try {
+                const tx = db.transaction(storeName, 'readonly');
+                const req = tx.objectStore(storeName).getAll();
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    // ── Load ─────────────────────────────────────────────────
+    async function loadData() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('table-wrap').style.display = 'none';
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('empty-msg').style.display = 'none';
+        document.getElementById('summary').innerHTML = '';
+        document.getElementById('state-grid').innerHTML = '';
+
+        try {
+            const db = await openDB();
+
+            const [progressRecords, flashcards, stateRecords] = await Promise.all([
+                getAllFromStore(db, 'user_progress'),
+                getAllFromStore(db, 'flashcards'),
+                getAllFromStore(db, 'user_state'),
+            ]);
+
+            db.close();
+
+            // Build flashcard lookup
+            flashcardMap = {};
+            flashcards.forEach(f => { flashcardMap[f.WordID] = f; });
+
+            allRows = progressRecords;
+
+            renderSummary(progressRecords);
+            renderTable();
+            renderState(stateRecords);
+
+            document.getElementById('loading').style.display = 'none';
+
+            if (progressRecords.length === 0) {
+                document.getElementById('empty-msg').style.display = 'block';
+            } else {
+                document.getElementById('table-wrap').style.display = 'block';
+            }
+
+        } catch (err) {
+            document.getElementById('loading').style.display = 'none';
+            const errEl = document.getElementById('error-msg');
+            errEl.style.display = 'block';
+            errEl.textContent = '✗ ' + err.message;
+        }
+    }
+
+    // ── Summary ───────────────────────────────────────────────
+    function renderSummary(rows) {
+        const total = rows.length;
+        const completed = rows.filter(r => r.WordCompleted === '1').length;
+        const seen = rows.filter(r => parseInt(r.WordSeenQty) > 0).length;
+        const withNote = rows.filter(r => (r.PersonalNote || '').trim() !== '').length;
+        const sponsorSeen = rows.filter(r => parseInt(r.SponsorSeen) > 0).length;
+        const withMetro = rows.filter(r => parseInt(r.MetroVisitsQty) > 0).length;
+
+        document.getElementById('summary').innerHTML = `
+            <div class="stat-pill blue">
+                <div class="label">Total Records</div>
+                <div class="value">${total}</div>
+            </div>
+            <div class="stat-pill green">
+                <div class="label">Completed</div>
+                <div class="value">${completed}</div>
+            </div>
+            <div class="stat-pill orange">
+                <div class="label">Seen ≥ 1×</div>
+                <div class="value">${seen}</div>
+            </div>
+            <div class="stat-pill yellow">
+                <div class="label">Has Note</div>
+                <div class="value">${withNote}</div>
+            </div>
+            <div class="stat-pill red">
+                <div class="label">Sponsor Seen</div>
+                <div class="value">${sponsorSeen}</div>
+            </div>
+            <div class="stat-pill">
+                <div class="label">Metro Visits</div>
+                <div class="value">${withMetro}</div>
+            </div>
+        `;
+    }
+
+    // ── Table ─────────────────────────────────────────────────
+    function getFilteredRows() {
+        return allRows.filter(r => {
+            switch (currentFilter) {
+                case 'completed': return r.WordCompleted === '1';
+                case 'seen':      return parseInt(r.WordSeenQty) > 0;
+                case 'note':      return (r.PersonalNote || '').trim() !== '';
+                case 'sponsor':   return parseInt(r.SponsorSeen) > 0;
+                case 'route':     return parseInt(r.MetroVisitsQty) > 0;
+                default:          return true;
+            }
+        });
+    }
+
+    function getSortedRows(rows) {
+        return [...rows].sort((a, b) => {
+            let va = a[sortCol];
+            let vb = b[sortCol];
+
+            // Numeric columns
+            const numCols = ['WordID', 'WordSeenQty', 'MetroVisitsQty', 'NeighborhoodVisitedQty', 'AudioPlayback'];
+            if (numCols.includes(sortCol)) {
+                va = parseInt(va) || 0;
+                vb = parseInt(vb) || 0;
+            } else {
+                va = String(va || '');
+                vb = String(vb || '');
+            }
+
+            if (va < vb) return sortDir === 'asc' ? -1 : 1;
+            if (va > vb) return sortDir === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    function renderTable() {
+        const rows = getSortedRows(getFilteredRows());
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+
+        if (rows.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--text-dim);">No records match this filter.</td></tr>`;
+            return;
+        }
+
+        rows.forEach(r => {
+            const card = flashcardMap[r.WordID] || {};
+            const seenQty = parseInt(r.WordSeenQty) || 0;
+            const metroQty = parseInt(r.MetroVisitsQty) || 0;
+            const nbhdQty = parseInt(r.NeighborhoodVisitedQty) || 0;
+            const audioQty = parseInt(r.AudioPlayback) || 0;
+
+            const seenBadge = seenQty === 0
+                ? `<span class="badge badge-dim">0</span>`
+                : `<span class="badge badge-orange">${seenQty}</span>`;
+
+            const metroBadge = metroQty === 0
+                ? `<span class="dash">—</span>`
+                : `<span class="badge badge-blue">${metroQty}</span>`;
+
+            const nbhdBadge = nbhdQty === 0
+                ? `<span class="dash">—</span>`
+                : `<span class="badge badge-blue">${nbhdQty}</span>`;
+
+            const audioBadge = audioQty === 0
+                ? `<span class="dash">—</span>`
+                : `<span class="badge badge-dim">${audioQty}</span>`;
+
+            const doneMark = r.WordCompleted === '1'
+                ? `<span class="check">✓</span>`
+                : `<span class="dash">—</span>`;
+
+            const sponsorMark = r.SponsorSeen === '1'
+                ? `<span class="check">✓</span>`
+                : `<span class="dash">—</span>`;
+
+            const note = (r.PersonalNote || '').trim();
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="mono" style="color:var(--text-dim)">${r.WordID}</td>
+                <td>
+                    <div class="word-kor">${esc(card.KoreanWord || '—')}</div>
+                    <div class="word-eng">${esc(card.WordDescription || '')}</div>
+                </td>
+                <td>${seenBadge}</td>
+                <td>${doneMark}</td>
+                <td>${sponsorMark}</td>
+                <td>${metroBadge}</td>
+                <td>${nbhdBadge}</td>
+                <td>${audioBadge}</td>
+                <td style="color:var(--text-dim);white-space:nowrap">${esc(card.NearestMetro || '—')}</td>
+                <td style="color:var(--text-dim);white-space:nowrap">${esc(card.Neighborhood || '—')}</td>
+                <td class="note-cell" title="${esc(note)}">${esc(note)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Update sort indicators
+        document.querySelectorAll('th[data-col]').forEach(th => {
+            th.classList.remove('sort-asc', 'sort-desc');
+            if (th.dataset.col === sortCol) {
+                th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+            }
+        });
+
+        document.getElementById('sort-info').textContent =
+            `Showing ${rows.length} of ${allRows.length} records · Sorted by: ${sortCol} ${sortDir === 'asc' ? '▲' : '▼'}`;
+    }
+
+    // ── State viewer ──────────────────────────────────────────
+    function renderState(stateRecords) {
+        const grid = document.getElementById('state-grid');
+        if (stateRecords.length === 0) {
+            grid.innerHTML = '<p style="color:var(--text-dim);padding:8px;font-size:11px;">No state records found.</p>';
+            return;
+        }
+        grid.innerHTML = stateRecords.map(s => `
+            <div class="state-card">
+                <div class="state-key">${esc(s.key)}</div>
+                <pre>${esc(JSON.stringify(s.value, null, 2))}</pre>
+            </div>
+        `).join('');
+    }
+
+    // ── Helpers ───────────────────────────────────────────────
+    function esc(str) {
+        const d = document.createElement('div');
+        d.textContent = String(str == null ? '' : str);
+        return d.innerHTML;
+    }
+
+    // ── Export ────────────────────────────────────────────────
+    function exportJSON() {
+        const rows = getSortedRows(getFilteredRows());
+        const enriched = rows.map(r => ({
+            ...r,
+            _card: flashcardMap[r.WordID]
+                ? {
+                    KoreanWord: flashcardMap[r.WordID].KoreanWord,
+                    WordDescription: flashcardMap[r.WordID].WordDescription,
+                    NearestMetro: flashcardMap[r.WordID].NearestMetro,
+                    Neighborhood: flashcardMap[r.WordID].Neighborhood,
+                }
+                : null,
+        }));
+        const blob = new Blob([JSON.stringify(enriched, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `progress_export_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // ── Event wiring ──────────────────────────────────────────
+    document.getElementById('btn-refresh').addEventListener('click', loadData);
+    document.getElementById('btn-export').addEventListener('click', exportJSON);
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter;
+            renderTable();
+        });
+    });
+
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+            const col = th.dataset.col;
+            if (sortCol === col) {
+                sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortCol = col;
+                sortDir = col === 'WordID' ? 'asc' : 'desc';
+            }
+            renderTable();
+        });
+    });
+
+    // ── Boot ──────────────────────────────────────────────────
+    loadData();
+</script>
+</body>
+</html>

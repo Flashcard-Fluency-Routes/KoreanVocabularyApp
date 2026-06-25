@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metro Line Selector</title>
+<link rel="icon" href="../brand/favicon.png">
+<style>
+  :root {
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-main: #f8fafc;
+    --text-dim: #94a3b8;
+    --border-color: #334155;
+    --accent: #38bdf8;
+    --accent-hover: #0ea5e9;
+  }
+
+  [data-theme="light"] {
+    --bg-color: #f1f5f9;
+    --card-bg: #ffffff;
+    --text-main: #1e293b;
+    --text-dim: #64748b;
+    --border-color: #e2e8f0;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 16px;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .container {
+    position: relative;
+    width: min(600px, 100%);
+    height: 200px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .line-heading {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--text-main);
+    z-index: 3;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .timeline {
+    position: absolute;
+    top: 30%;
+    left: 0;
+    height: 4px;
+    background: #555;
+    width: 100%;
+    transform: translateY(-50%);
+  }
+
+  .items {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+  }
+
+  .item {
+    flex: 1;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    height: 100%;
+  }
+
+  .second-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    position: absolute;
+    left: 50%;
+    top: calc(50% - 20px);
+    transform: translate(-50%, -50%);
+    display: none;
+    z-index: 2;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px black;
+  }
+
+  .second-dot.visible {
+    display: block;
+  }
+
+  .third-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    position: absolute;
+    left: 50%;
+    top: calc(30% - 20px);
+    transform: translate(-50%, -50%);
+    display: none;
+    z-index: 2;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px black;
+  }
+
+  .third-dot.visible {
+    display: block;
+  }
+
+  .item:hover .label {
+    text-decoration: underline;
+  }
+
+  .node {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    position: absolute;
+    z-index: 2;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px black;
+    top: 30%; /* same as timeline */
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 2px white, 0 0 0 4px black,
+                  0 0 0 7px var(--glow-color, #555),
+                  0 0 14px 4px var(--glow-color, #555);
+    }
+    50% {
+      box-shadow: 0 0 0 2px white, 0 0 0 4px black,
+                  0 0 0 10px var(--glow-color, #555),
+                  0 0 22px 7px var(--glow-color, #555);
+    }
+  }
+
+  .item.active .node {
+    transform: translate(-50%, -50%) scale(1.4);
+    animation: glow-pulse 1.5s ease-in-out infinite;
+  }
+
+  .item.active .label {
+  font-weight: bold;
+  color: var(--text-main);
+}
+
+.label {
+  font-size: 13px;
+  position: absolute;
+  top: calc(20% + 40px);
+
+  transform: rotate(-45deg);
+  transform-origin: top right;
+
+  right: 30%;
+  left: auto;
+
+  white-space: normal;
+  max-width: 90px;
+  text-align: right;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+  @media (max-width: 360px) {
+    .label {
+      font-size: 11px;
+    }
+  }
+
+  .controls {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .controls button {
+    margin: 0 3px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    touch-action: manipulation;
+    background: var(--card-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+  }
+
+  .line-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+    width: min(600px, 100%);
+  }
+
+  .line-buttons button {
+    padding: 8px 16px;
+    cursor: pointer;
+    border: 4px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text-main);
+    font-size: 14px;
+    touch-action: manipulation;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .line-buttons button.active-line-btn {
+    font-weight: bold;
+    color: white;
+  }
+
+  .lets-go-btn {
+    margin-top: 14px;
+    padding: 12px 40px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background: #333;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    touch-action: manipulation;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .lets-go-btn:hover {
+    background: #555;
+  }
+
+  .lets-go-btn.blocked {
+    background: #4a3a3a;
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .lets-go-btn.blocked:hover {
+    background: #4a3a3a;
+  }
+
+  #flashcards-msg {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #f59e0b;
+    font-style: italic;
+    min-height: 18px;
+    text-align: center;
+    width: min(600px, 100%);
+  }
+
+  #measureBtn {
+    margin-top: 10px;
+    padding: 12px 40px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background: #333;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    touch-action: manipulation;
+    display: inline-block;
+  }
+
+  #measureBtn:hover {
+    background: #555;
+  }
+
+  #measureBtn.measuring {
+    background: #b8720a;
+  }
+
+  #measureBtn.measuring:hover {
+    background: #d4871a;
+  }
+
+  #measureBtn.measured {
+    background: #7a1a1a;
+  }
+
+  #measureBtn.measured:hover {
+    background: #9e2222;
+  }
+
+  #measureLine {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9;
+    display: none;
+  }
+
+  #measureLine line {
+    stroke: black;
+    stroke-width: 0.5;
+  }
+
+  #measureResult {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-style: italic;
+    min-height: 18px;
+  }
+
+  .map-container {
+    width: min(600px, 100%);
+    aspect-ratio: 2000 / 1330;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.15);
+    position: relative;
+    background: #ebf1eb;
+  }
+
+  .map-container img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  #mapPin {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--pin-color, #333);
+    border: 2px solid white;
+    z-index: 10;
+    pointer-events: none;
+    display: none;
+    animation: pin-pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pin-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 2px white,
+                  0 0 0 4px var(--pin-color, #333),
+                  0 0 10px 4px var(--pin-color, #333);
+    }
+    50% {
+      box-shadow: 0 0 0 2px white,
+                  0 0 0 4px var(--pin-color, #333),
+                  0 0 20px 8px var(--pin-color, #333);
+    }
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: min(600px, 100%);
+    margin-bottom: 12px;
+  }
+
+  .back-to-home {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .back-to-home:hover {
+    text-decoration: underline;
+    color: var(--text-main);
+  }
+
+  .theme-toggle {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-dim);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .bottom-nav {
+    background-color: #0a2342;
+    padding: 0.75rem 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: 0.75rem;
+    padding: 0.25rem;
+    transition: color 0.2s;
+  }
+
+  .nav-item:hover {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .nav-item svg {
+    margin-bottom: 0.25rem;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .nav-item.active {
+    color: white;
+    font-weight: 500;
+  }
+
+  .nav-item[aria-disabled="true"] {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: default;
+  }
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="page-header">
+  <a href="../index.html" class="back-to-home">← Home</a>
+  <button class="theme-toggle" onclick="toggleTheme()">Light / Dark</button>
+</div>
+
+<div class="map-container">
+  <img src="assets/map_seoul_all_lines_large.jpg" alt="Seoul Metro Map" id="metroMap">
+  <div id="mapPin"></div>
+  <svg id="measureLine" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <line id="measureLineEl" x1="0" y1="0" x2="0" y2="0"/>
+  </svg>
+</div>
+
+<div class="container">
+  <div class="line-heading" id="lineHeading">Line 2</div>
+  <div class="timeline"></div>
+  <div class="items" id="items"></div>
+
+  <div class="controls">
+    <button onclick="moveLeft()">◄</button>
+    <button onclick="moveRight()">►</button>
+  </div>
+</div>
+
+<div class="line-buttons">
+  <button id="btn1" onclick="switchLine(1)">Line 1</button>
+  <button id="btn2" onclick="switchLine(2)">Line 2</button>
+  <button id="btn3" onclick="switchLine(3)">Line 3</button>
+  <button id="btn4" onclick="switchLine(4)">Line 4</button>
+  <button id="btn5" onclick="switchLine(5)">Line 5</button>
+  <button id="btn6" onclick="switchLine(6)">Line 6</button>
+  <button id="btn7" onclick="switchLine(7)">Line 7</button>
+  <button id="btn8" onclick="switchLine(8)">Line 8</button>
+  <button id="btn9" onclick="switchLine(9)">Line 9</button>
+</div>
+
+<a href="../FlashCards/flashcards.html" class="lets-go-btn" onclick="event.preventDefault(); openFlashcards();">Go to Flashcards</a>
+<div id="flashcards-msg"></div>
+<button id="measureBtn" onclick="handleMeasure()">Measure Distance</button>
+<div id="measureResult"></div>
+
+<script>
+  // ── Map pin ───────────────────────────────────────────────────────────────
+  const LAT_MIN = 37.445398290586525;
+  const LAT_MAX = 37.624180486925965;
+  const LNG_MIN = 126.84514161904843;
+  const LNG_MAX = 127.18321163123785;
+
+  // name (lower-cased) → { lat, lng }
+  let stationCoords = {};
+
+  fetch('js/station_codes.json')
+    .then(r => r.json())
+    .then(data => {
+      for (const [, info] of Object.entries(data)) {
+        if (info.station_name_eng) {
+          const key = info.station_name_eng.toLowerCase().trim();
+          if (!stationCoords[key]) {
+            stationCoords[key] = { lat: info.lat, lng: info.lng };
+          }
+        }
+      }
+      updateView(); // re-render once coords are loaded
+    });
+
+  function updateMapPin(stationName, lineColor) {
+    const pin = document.getElementById('mapPin');
+    const coords = stationCoords[stationName.toLowerCase().trim()];
+    if (!coords) { pin.style.display = 'none'; return; }
+
+    const xPct = (coords.lng - LNG_MIN) / (LNG_MAX - LNG_MIN) * 100;
+    const yPct = (LAT_MAX - coords.lat) / (LAT_MAX - LAT_MIN) * 100;
+
+    if (xPct < 0 || xPct > 100 || yPct < 0 || yPct > 100) {
+      pin.style.display = 'none';
+      return;
+    }
+
+    pin.style.setProperty('--pin-color', lineColor);
+    pin.style.left = xPct + '%';
+    pin.style.top  = yPct + '%';
+    pin.style.display = 'block';
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const MAX_VISIBLE = 6;
+
+  // ── Node names — update these with your own unique names ─────────────────
+
+  const LINE1_NODES = [
+    'Sinseol-dong',  'Dongmyo',  'Dongdaemun',  'Jongno 5-ga',  'Jongno 3-ga',
+    'Jonggak',  'City Hall',  'Seoul Station',  'Namyeong',  'Yongsan',
+    'Noryangjin', 'Daebang', 'Singil', 'Yeongdeunpo', 'Sindorim',
+    'Guro', 'Guil', 'Gaebong', 'Oryu-dong', 'Onsu',
+  ];
+
+  const LINE2_NODES = [
+    'Euljiro 4-ga',
+    'Dongdaemun History & Culture Park', 'Sindang',
+    'Sangwangsimni', 'Wangsimni',
+    'Hanyang University', 'Ttukseom',
+    'Seongsu', 'Konkuk University',
+    'Guui', 'Gangbyeon',
+    'Jamsilnaru', 'Jamsil',
+    'Sports Complex', 'Samseong',
+    'Seolleung', 'Yeoksam',
+    'Gangnam', 
+    'Seoul National University of Education',
+    'Seocho',
+    'Bangbae', 'Sadang',
+    'Nakseongdae',
+    'Seoul National University Gwanakgu Office',
+    'Bongcheon', 'Sillim',
+    'Sindaebang', 'Guro Digital Complex',
+    'Daerim', 'Sindorim',
+    'Mullae', 'Yeongdeungpo-gu Office',
+    'Dangsan', 'Hapjeong',
+    'Hongik University', 'Sinchon',
+    'Ewha Womans University', 'Ahyeon',
+    'Chungjeongno', 'City Hall',
+    'Euljiro 1-ga', 'Euljiro 3-ga',
+  ];
+
+
+  const LINE3_NODES = [
+  'Daehwa', 'Juyeop', 'Jeongbalsan', 'Madu', 'Baekseok', 'Daegok', 'Hwajeong', 'Wondang', 
+  'Wonheung', 'Samsong', 'Jichuk', 'Gupabal', 'Yeonsinnae', 'Bulgwang', 'Nokbeon', 
+  'Hongje', 'Muakjae', 'Dongnimmun', 'Gyeongbokgung', 'Anguk', 'Jongno 3-ga', 
+  'Euljiro 3-ga', 'Chungmuro', 'Dongguk University', 'Yaksu', 'Geumho', 'Oksu', 
+  'Apgujeong', 'Sinsa', 'Jamwon', 'Express Bus Terminal', 'Seoul National University of Education',
+  'Nambu Bus Terminal', 'Yangjae', 'Maebong', 'Dogok', 'Daechi', 'Hangnyeoul', 'Daecheong', 'Irwon', 'Suseo'
+  ];
+
+  const LINE4_NODES = [
+    'Sungshin Women\'s University',
+    'Hansung University',
+    'Hyehwa',
+    'Dongdaemun',
+    'Dongdaemun History & Culture Park',
+    'Chungmuro',
+    'Myeong-dong',
+    'Hoehyeon',
+    'Seoul Station',
+    'Sookmyung Women\'s University',
+    'Samgakji',
+    'Sinyongsan',
+    'Ichon',
+    'Dongjak',
+    'Isu',
+    'Sadang',
+    'Namtaeryeong',
+    'Seonbawi',
+    'Seoul Grand Park',
+    'Gwacheon',
+    'Government Complex Gwacheon',
+    'Indeogwon',
+    'Pyeongchon',
+    'Beomgye',
+    'Geumjeong'
+  ];
+
+  const LINE5_NODES = [
+    'Banghwa',
+    'Gaehwasan',
+    'Gimpo International Airport',
+    'Songjeong', 
+    'Magok',     
+    'Balsan',    
+    'Ujangsan',  
+    'Hwagok',    
+    'Kkachisan',
+    'Sinjeong',
+    'Mok-dong',
+    'Omokgyo',
+    'Yangpyeong',
+    'Yeongdeungpo-gu Office',
+    'Yeongdeungpo Market',
+    'Singil',
+    'Yeouido',
+    'Yeouinaru',
+    'Mapo',
+    'Gongdeok',
+    'Aeogae',
+    'Chungjeongno',
+    'Seodaemun',
+    'Gwanghwamun',
+    'Jongno 3-ga',
+    'Euljiro 4-ga',
+    'Dongdaemun History & Culture Park',
+    'Cheonggu',
+    'Singeumho',
+    'Haengdang',
+    'Wangsimni',
+    'Majang',
+    'Dapsimni',
+    'Janghanpyeong',
+    'Gunja',
+    'Achasan',
+    'Gwangnaru',
+    'Cheonho',
+    'Gangdong', // The line forks here
+    'Dunchon-dong', // Fork 1
+    'Olympic Park', // Fork 1
+    'Bangi',
+    'Ogeum'
+  ];
+
+  const LINE6_NODES = [
+    'Digital Media City',
+    'World Cup Stadium',
+    'Mapo-gu Office',
+    'Mangwon',
+    'Hapjeong',
+    'Sangsu',
+    'Gwangheungchang',
+    'Daeheung',
+    'Gongdeok',
+    'Hyochang Park',
+    'Samgakji',
+    'Itaewon',
+    'Hangangjin',
+    'Beotigogae',
+    'Yaksu',
+    'Cheonggu',
+    'Sindang',
+    'Dongmyo',
+    'Changsin',
+    'Bomun',
+    'Anam',
+    'Korea University',
+    'Wolgok',
+    'Sangwolgok',
+    'Dolgoji',
+    'Seokgye'
+  ];
+
+  const LINE7_NODES = [
+    'Gunja',
+    'Children\'s Grand Park',
+    'Konkuk University',
+    'Jayang (Ttukseom Hangang Park)',
+    'Cheongdam',
+    'Gangnam-gu Office',
+    'Hak-dong',
+    'Nonhyeon',
+    'Banpo',
+    'Express Bus Terminal',
+    'Naebang',
+    'Isu (Chongshin Univ.)',
+    'Namseong',
+    'Soongsil University (Salpijae)',
+    'Sangdo',
+    'Jangseungbaegi',
+    'Sindaebangsamgeori',
+    'Boramae',
+    'Sinpung',
+    'Daerim',
+    'Namguro',
+    'Gasan Digital Complex',
+    'Cheolsan',
+    'Gwangmyeongsageori',
+    'Cheonwang',
+    'Onsu (Sungkonghoe Univ.)'
+  ];
+
+  const LINE8_NODES = [
+    'Amsa',
+    'Cheonho',
+    'Gangdong-gu Office',
+    'Mongchontoseong (Peace Gate)',
+    'Jamsil',
+    'Seokchon',
+    'Songpa',
+    'Garak Market'
+  ];
+
+  const LINE9_NODES = [
+    'Gaehaw',
+    'Gimpo Intl Airport',
+    'Airport Market',
+    'Sinbanghwa',
+    'Magongnaru',
+    'Yangcheon Hyanggyo', 
+    'Gayang', 
+    'Jeungmi', 
+    'Deungchon', 
+    'Yeomchang', 
+    'Sinmockdong',
+    'Seonyudo',
+    'Dangsan', 
+    'National Assembly', 
+    'Yeouido', 
+    'Saetgang', 
+    'Noryangjin', 
+    'Nodeul', 
+    'Heukseok', 
+    'Dongjak', 
+    'Gubanpo', 
+    'Sinbanpo', 
+    'Express Bus Terminal', 
+    'Sappyeong',
+    'Sinnonhyeon', 
+    'Eonju', 
+    'Seonjeongneung', 
+    'Samseong Jungang', 
+    'Bongeunsa', 
+    'Sports Complex', 
+    'Samjeon',
+    'Seokchon Gobun', 
+    'Seokchon',
+    'Sonpanauru',
+    'Hangseong Baekje',
+    'Olympic Park', 
+    'Duchon Oryun',
+    'VHS Medical Center'
+];
+
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // ── Line configuration ────────────────────────────────────────────────────
+  const lines = {
+    1: {
+      totalItems: 17,
+      nodes: LINE1_NODES,
+      color: '#184b85',        // blue
+      activeColor: '#ffffff',
+      currentIndex: 0,
+      secondDotItems: {
+        1: '#33a13f',
+        2: '#7c4a32',
+        3: '#379ccc',
+        5: '#ed6d00',
+        7: '#33a13f',
+        8: '#379ccc',
+        11: '#a49d88',
+        13: '#784598',
+        15: '#33a13f',
+        20: '#6d7e30',
+      },
+      thirdDotItems: {
+        5: '#784598',
+      }
+    },
+    2: {
+      totalItems: 42,
+      nodes: LINE2_NODES,
+      color: '#33a13f',        // green
+      activeColor: '#ffffff',
+      currentIndex: 0,
+      secondDotItems: {
+        1: '#784598',
+        3: '#7c4a32',
+        5: '#784598',
+        9: '#6d7e30',
+        13: '#d11a71',
+        14: '#a49d88',
+        22: '#379ccc',
+        29: '#6d7e30',
+        33: '#a49d88',
+        34: '#7c4a32',
+        40: '#184b85',
+        42: '#ed6d00',
+      },
+      thirdDotItems: {}
+    },
+    3: {
+      totalItems: 41,
+      nodes: LINE3_NODES,
+      color: '#ed6d00',        // orange
+      activeColor: '#ffffff',
+      currentIndex: 0,
+      secondDotItems: {
+        13: '#7c4a32',
+        21: '#184b85',
+        22: '#33a13f',
+        23: '#379ccc',
+        25: '#7c4a32',
+        31: '#6d7e30',
+      },
+      thirdDotItems: {
+        21: '#784598',
+        31: '#a49d88',
+      }
+    },
+    4: {
+      totalItems: 25,
+      nodes: LINE4_NODES,
+      color: '#379ccc',        // purple
+      activeColor: '#ffffff',
+      currentIndex: 0,
+      secondDotItems: {
+        5: '#184b85',
+        6: '#ed6d00',
+        9: '#184b85',
+        11: '#7c4a32',
+        14: '#a49d88',
+        15: '#6d7e30',
+        16: '#33a13f'
+      },
+      thirdDotItems: {}
+    },
+    5: {
+      totalItems: 43,
+      nodes: LINE5_NODES,
+      color: '#784598',        // red
+      activeColor: '#ffffff',
+      currentIndex: 0,
+      secondDotItems: {
+        3: '#a49d88',
+        16: '#184b85',
+        17: '#a49d88',
+        20: '#7c4a32',
+        25: '#184b85',
+        26: '#33a13f',
+        35:	'#6d7e30',
+        38:	'#d11a71',
+      },
+      thirdDotItems: {
+        25: '#ed6d00',
+      }
+    },
+    6: {
+      totalItems: 26,
+      nodes: LINE6_NODES,
+      color: '#7c4a32',        // pink
+      activeColor: '#ffffff',
+      currentIndex: 0,
+      secondDotItems: {
+        5: '#33a13f',
+        9: '#784598',
+        11: '#379ccc',
+        15: '#ed6d00',
+        17: '#33a13f',
+        18: '#184b85',
+      },
+      thirdDotItems: {}
+    },
+    7: {
+      totalItems: 27,
+      nodes: LINE7_NODES,
+      color: '#6d7e30',        // yellow
+      activeColor: '#ffffff',
+      currentIndex: 0,
+      secondDotItems: {
+        1: '#784598',
+        3: '#33a13f',
+        10: '#ed6d00',
+        12: '#379ccc',
+        20: '#33a13f',
+        26:	'#184b85',
+      },
+      thirdDotItems: {
+        10: '#a49d88',
+      }
+    },
+    8: {
+      totalItems: 8,
+      nodes: LINE8_NODES,
+      color: '#d11a71',        // cyan
+      activeColor: '#ffffff',
+      currentIndex: 0,
+      secondDotItems: {
+        2: '#784598',
+        5: '#33a13f',
+        6: '#a49d88',
+        8: '#ed6d00',
+      },
+      thirdDotItems: {}
+    },
+    9: {
+      totalItems: 38,
+      nodes: LINE9_NODES,
+      color: '#a49d88',        // teal
+      activeColor: '#ffffff',
+      currentIndex: 0,
+      secondDotItems: {
+        2: '#784598',
+        13: '#33a13f',
+        15: '#784598',
+        17: '#184b85',
+        20: '#379ccc',
+        23: '#ed6d00',
+        30: '#33a13f',
+        33: '#d11a71',
+      },
+      thirdDotItems: {
+        23: '#6d7e30',
+      }
+    },
+  };
+
+  let activeLine = 2;
+  let visibleItems = MAX_VISIBLE;
+  let activePosition = Math.floor(MAX_VISIBLE / 2);
+  let measurePoint1 = null;
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const itemsContainer = document.getElementById('items');
+
+  function wrap(n, total) {
+    return ((n % total) + total) % total;
+  }
+
+  function haversineKm(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function coordToMapPct(lat, lng) {
+    return {
+      x: (lng - LNG_MIN) / (LNG_MAX - LNG_MIN) * 100,
+      y: (LAT_MAX - lat) / (LAT_MAX - LAT_MIN) * 100,
+    };
+  }
+
+  function clearMeasurement() {
+    measurePoint1 = null;
+    const btn = document.getElementById('measureBtn');
+    btn.textContent = 'Measure Distance';
+    btn.classList.remove('measuring', 'measured');
+    document.getElementById('measureResult').textContent = '';
+    const svg = document.getElementById('measureLine');
+    svg.style.display = 'none';
+  }
+
+  function handleMeasure() {
+    const btn = document.getElementById('measureBtn');
+
+    if (btn.classList.contains('measured')) {
+      clearMeasurement();
+      return;
+    }
+
+    const line = lines[activeLine];
+    const name = line.nodes[line.currentIndex];
+    const coords = stationCoords[name.toLowerCase().trim()];
+    if (!coords) return;
+
+    const result = document.getElementById('measureResult');
+
+    if (!measurePoint1) {
+      measurePoint1 = { name, lat: coords.lat, lng: coords.lng, line: activeLine };
+      btn.textContent = 'Distance to here';
+      btn.classList.add('measuring');
+      result.textContent = `Point 1: ${name} (Line ${activeLine})`;
+    } else {
+      const dist = haversineKm(measurePoint1.lat, measurePoint1.lng, coords.lat, coords.lng);
+      result.textContent = `${measurePoint1.name} → ${name}: ${dist.toFixed(2)} km`;
+
+      const p1 = coordToMapPct(measurePoint1.lat, measurePoint1.lng);
+      const p2 = coordToMapPct(coords.lat, coords.lng);
+      const el = document.getElementById('measureLineEl');
+      el.setAttribute('x1', p1.x);
+      el.setAttribute('y1', p1.y);
+      el.setAttribute('x2', p2.x);
+      el.setAttribute('y2', p2.y);
+      document.getElementById('measureLine').style.display = 'block';
+
+      btn.textContent = 'Clear measurement';
+      btn.classList.remove('measuring');
+      btn.classList.add('measured');
+    }
+  }
+
+  // Create MAX_VISIBLE DOM nodes — some hidden on narrow screens
+  const domItems = [];
+  for (let i = 0; i < MAX_VISIBLE; i++) {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.innerHTML = `<div class="third-dot"></div><div class="second-dot"></div><div class="node"></div><div class="label"></div>`;
+    div.addEventListener('click', () => {
+      const line = lines[activeLine];
+      line.currentIndex = wrap(line.currentIndex + (i - activePosition), line.totalItems);
+      updateView();
+    });
+    domItems.push(div);
+    itemsContainer.appendChild(div);
+  }
+
+  // Compute how many nodes to show based on container width
+  function updateVisibleCount() {
+    const w = document.querySelector('.container').offsetWidth;
+    const newCount = w < 420 ? 4 : MAX_VISIBLE;
+    if (newCount === visibleItems) return;
+    visibleItems = newCount;
+    activePosition = Math.floor(visibleItems / 2);
+    domItems.forEach((item, i) => {
+      item.style.display = i < visibleItems ? '' : 'none';
+    });
+  }
+
+  function updateView() {
+    const line = lines[activeLine];
+    document.querySelector('.timeline').style.background = line.color;
+    updateMapPin(line.nodes[line.currentIndex], line.color);
+    domItems.forEach((item, visPos) => {
+      if (visPos >= visibleItems) return;
+      const realIndex = wrap(line.currentIndex + (visPos - activePosition), line.totalItems);
+      item.querySelector('.label').textContent = line.nodes[realIndex];
+      item.classList.toggle('active', visPos === activePosition);
+
+      const node = item.querySelector('.node');
+      node.style.backgroundColor = (realIndex === 0 || realIndex === line.totalItems - 1) ? line.activeColor : line.color;
+      node.style.setProperty('--glow-color', line.color);
+
+      const secondDot = item.querySelector('.second-dot');
+      const color = line.secondDotItems[realIndex + 1];
+      if (color) {
+        secondDot.style.backgroundColor = color;
+        secondDot.classList.add('visible');
+      } else {
+        secondDot.classList.remove('visible');
+      }
+
+      const thirdDot = item.querySelector('.third-dot');
+      const thirdColor = line.thirdDotItems[realIndex + 1];
+      if (thirdColor) {
+        thirdDot.style.backgroundColor = thirdColor;
+        thirdDot.classList.add('visible');
+      } else {
+        thirdDot.classList.remove('visible');
+      }
+    });
+  }
+
+  function moveLeft() {
+    const line = lines[activeLine];
+    line.currentIndex = wrap(line.currentIndex - 1, line.totalItems);
+    updateView();
+  }
+
+  function moveRight() {
+    const line = lines[activeLine];
+    line.currentIndex = wrap(line.currentIndex + 1, line.totalItems);
+    updateView();
+  }
+
+  function switchLine(n) {
+    activeLine = n;
+    document.getElementById('lineHeading').textContent = `Line ${n}`;
+    for (let i = 1; i <= 9; i++) {
+      const btn = document.getElementById(`btn${i}`);
+      const isActive = i === n;
+      btn.classList.toggle('active-line-btn', isActive);
+      btn.style.borderColor = lines[i].color;
+      btn.style.backgroundColor = isActive ? lines[i].color : '';
+      btn.style.color = isActive ? 'white' : '';
+    }
+    updateView();
+  }
+
+  function toggleTheme() {
+    const current = document.body.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', next);
+    localStorage.setItem('theme_preference', next);
+  }
+
+  // Restore saved theme
+  const savedTheme = localStorage.getItem('theme_preference') || 'dark';
+  document.body.setAttribute('data-theme', savedTheme);
+
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'theme_preference') {
+      document.body.setAttribute('data-theme', e.newValue || 'dark');
+    }
+  });
+
+  // Touch swipe support
+  let touchStartX = 0;
+  document.querySelector('.container').addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+  document.querySelector('.container').addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 30) {
+      if (dx < 0) moveRight();
+      else moveLeft();
+    }
+  }, { passive: true });
+
+  document.querySelector('.container').addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (delta > 0) moveRight();
+    else moveLeft();
+  });
+
+  window.addEventListener('resize', () => {
+    updateVisibleCount();
+    updateView();
+  });
+
+  // Initialise
+  updateVisibleCount();
+  switchLine(2);
+
+  let routeActiveBlocked = false;
+
+  function updateFlashcardsBtn() {
+    document.querySelector('.lets-go-btn').classList.toggle('blocked', routeActiveBlocked);
+  }
+
+  function checkFlashcardsState() {
+    const req = indexedDB.open('flashcard_app_db', 1);
+    req.onupgradeneeded = () => {};
+    req.onsuccess = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('user_state')) { db.close(); return; }
+
+      const tx = db.transaction('user_state', 'readonly');
+      const store = tx.objectStore('user_state');
+      let routeMode = null, wordGame = null, pending = 2;
+
+      const done = () => {
+        if (--pending > 0) return;
+        db.close();
+        routeActiveBlocked = !!(routeMode?.active) && !(wordGame?.active);
+        updateFlashcardsBtn();
+      };
+
+      const r1 = store.get('route_mode');
+      r1.onsuccess = (e) => { routeMode = e.target.result?.value; done(); };
+      r1.onerror = done;
+
+      const r2 = store.get('word_game');
+      r2.onsuccess = (e) => { wordGame = e.target.result?.value; done(); };
+      r2.onerror = done;
+    };
+    req.onerror = () => {};
+  }
+
+  function openFlashcards() {
+    const msg = document.getElementById('flashcards-msg');
+    if (routeActiveBlocked) {
+      msg.textContent = 'A route is active in Flashcards — return there to complete or clear it first.';
+      return;
+    }
+    msg.textContent = '';
+    sessionStorage.setItem('fc_origin', 'metro');
+
+    const line = lines[activeLine];
+    const stationName = line.nodes[line.currentIndex];
+    const destination = '../FlashCards/flashcards.html';
+
+    const req = indexedDB.open('flashcard_app_db', 1);
+
+    req.onupgradeneeded = () => {
+      // DB not yet initialised by FlashCards — navigate and let FlashCards bootstrap without pre-filter
+    };
+
+    req.onsuccess = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('user_state')) {
+        db.close();
+        window.location.href = destination;
+        return;
+      }
+
+      const filters = {
+        WordCategory: [], WordListName: [], RouteName: [], RouteNameSeq: [],
+        Neighborhood: [], PlaceOfInterestNameEng: [], POICategory: [],
+        NearestMetro: [stationName],
+        NearestMetroCode: [],
+        NearestMetroLine: [],
+      };
+
+      const tx = db.transaction('user_state', 'readwrite');
+      const store = tx.objectStore('user_state');
+      store.put({ key: 'active_filters', value: filters });
+      store.put({ key: 'route_mode', value: { active: false, routeName: '', nextWordID: null, completedMetros: [] } });
+
+      tx.oncomplete = () => { db.close(); window.location.href = destination; };
+      tx.onerror   = () => { db.close(); window.location.href = destination; };
+    };
+
+    req.onerror = () => { window.location.href = destination; };
+  }
+
+  checkFlashcardsState();
+</script>
+
+
+<nav class="bottom-nav">
+  <a href="../index.html" class="nav-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      <span>Home</span>
+  </a>
+  <a href="../FlashCards/flashcards.html" class="nav-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="4" width="20" height="14" rx="2"></rect>
+        <rect x="5" y="1" width="14" height="4" rx="1" opacity="0.5"></rect>
+        <line x1="8" y1="10" x2="16" y2="10"></line>
+        <line x1="8" y1="14" x2="13" y2="14"></line>
+      </svg>
+      <span>Flashcards</span>
+  </a>
+  <a href="#" class="nav-item active">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"></circle><line x1="1.05" y1="12" x2="7" y2="12"></line><line x1="17.01" y1="12" x2="22.96" y2="12"></line>
+      </svg>
+      <span>Metro Explorer</span>
+  </a>
+  <a href="../settings.html" class="nav-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+      <span>Settings</span>
+  </a>
+</nav>
+<script type="module">
+    import { initBrand } from '../brand_loader.js';
+    initBrand();
+</script>
+</body>
+</html>

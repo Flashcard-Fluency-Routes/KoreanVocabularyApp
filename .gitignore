@@ -1,0 +1,74 @@
+# ── Build output ───────────────────────────────────────────────────────────────
+dist/
+dist-ssr/
+
+# ── Dependencies ───────────────────────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+
+# ── Logs ───────────────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── macOS ──────────────────────────────────────────────────────────────────────
+.DS_Store
+*.DS_Store
+
+# ── Editor backup / temp files ─────────────────────────────────────────────────
+*~
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── Local environment overrides ────────────────────────────────────────────────
+*.local
+
+# ── Claude AI session memory ───────────────────────────────────────────────────
+memory/
+
+# ── VS Code ────────────────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+
+# ── JetBrains IDEs ────────────────────────────────────────────────────────────
+.idea/
+
+# ── Legacy root brand folder (anchored to root so public/brand/ is NOT excluded)
+/brand/
+
+# ── Large static assets (not tracked in git) ──────────────────────────────────
+FlashCards/assets/*.webp
+FlashCards/assets/*.png
+FlashCards/assets/*.m4a
+FlashCards/assets/*.mov
+FlashCards/assets/*.mp4
+FlashCards/assets/*.mp3
+MetroAnimation/assets/*.webp
+MetroAnimation/assets/*.png
+MetroAnimation/assets/*.m4a
+MetroAnimation/assets/*.mov
+MetroAnimation/assets/*.mp4
+MetroAnimation/assets/*.mp3
+
+# ── Personal reference photographs ────────────────────────────────────────────
+public/brand/IMG_*.jpg
+public/brand/IMG_*.jpeg
+
+# ── Reference and promotional images ──────────────────────────────────────────
+public/brand/BakeryNearSindangHeading.png
+public/brand/visit-the-website.webp
+
+# ── Test data ──────────────────────────────────────────────────────────────────
+public/brand/custom_flashcards*.json
+!public/brand/flashcards.json
+
+# ── Runtime state files ────────────────────────────────────────────────────────
+FlashCards/active_filters.json
+FlashCards/user_progress.json
+FlashCards/user_state.json
