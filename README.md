@@ -1,6 +1,6 @@
 # Korean Vocabulary App
 
-A client-side Korean vocabulary learning app built around location-based flashcards tied to real places in Seoul. Users study vocabulary words in the geographic context where they would naturally encounter them, virtually travelling the Seoul Metro system between locations.
+A client-side Korean vocabulary learning app built around location-based flashcards tied to real places in Seoul. Users study vocabulary words in the geographic context where they would naturally encounter them, virtually travelling the Seoul Metro system between locations, while at the same time getting familiar with the Seoul Metro station locations.
 
 ## Features
 
@@ -21,7 +21,7 @@ A client-side Korean vocabulary learning app built around location-based flashca
 
 ## Getting Started
 
-### Prerequisites
+### Installation Prerequisites
 
 - [Node.js 22 LTS](https://nodejs.org/)
 - [pnpm](https://pnpm.io/) (install via `npm install -g pnpm` or [Corepack](https://nodejs.org/api/corepack.html))
@@ -70,7 +70,7 @@ docker compose exec app pnpm dev
 │   ├── config.json             ← Brand colours, name, and asset filenames
 │   └── flashcards.json         ← Vocabulary dataset (many records)
 │
-├── FlashCards/                 ← Flashcard module (see FlashCards/CLAUDE.md)
+├── FlashCards/                 ← Flashcard module
 ├── MetroAnimation/             ← Metro line animation module
 ├── MetroLineSelector/          ← Line selection module
 ├── ProgressDashboard/          ← Progress tracking and visualisation module
@@ -85,22 +85,79 @@ All brand configuration lives in `public/brand/`. Edit `config.json` to change t
 
 The app builds to a fully static site. After `pnpm build`, deploy the `dist/` folder to any static host (Cloudflare Pages, Netlify, GitHub Pages, or a plain web server).
 
-See `_DeveloperGuides/cloudflare_deploy_guide.md` for a step-by-step Cloudflare Pages guide.
-
 No CDN, database, or server-side processing is required.
 
 ## Static Assets
 
-Map tile images and audio files are not included in this repository due to file size constraints. These files belong in:
+Map tile images and audio files are not included in this repository due to file size constraints. Place them in the directories below using the naming conventions described.
 
-- `FlashCards/assets/` — location map images (`.webp`)
-- `MetroAnimation/assets/` — station map images (`.webp`)
+### `FlashCards/assets/`
 
-See `FlashCards/CLAUDE.md` and `MetroAnimation/README.md` for details on the expected assets.
+Location map images and optional media files consumed by the flashcard renderer.
+
+| File pattern | Description |
+|---|---|
+| `map_{NearestMetroCode}_{StationName}.webp` | 964×964 px map centred on the nearest metro station, covering a 3 km × 3 km area. Used for the POI pin overlay. |
+| `map_seoul_all_lines_small.webp` | 1000×666 px overview map of all Seoul Metro lines. Used on route-navigation cards. |
+| `{AudioURL}.m4a` / `.mp3` / `.ogg` / `.aac` | Pronunciation audio. Filename must match the `AudioURL` field in the flashcard record. |
+| `{VideoURL}.(mp4 etc.)` | Optional local video. Filename must match the `VideoURL` field where no HTTP URL is set. |
+
+Station codes are 3-digit integers derived from the Seoul Metro numbering scheme (e.g. `201` = Line 2, City Hall). The full code-to-filename mapping lives in [`public/FlashCards/js/poi_maps.json`](public/FlashCards/js/poi_maps.json).
+
+Examples: `map_201_City_Hall.webp`, `map_222_Gangnam.webp`, `map_240_Sinchon.webp`
+
+### `MetroAnimation/assets/`
+
+Station map images displayed during the Line 2 animation between study locations.
+
+| File pattern | Description |
+|---|---|
+| `line2_{StationCode}_{StationName}.webp` | Map image for a Line 2 station, shown at departure and arrival. |
+| `map.png` | Background metro line map used as the animation canvas. |
+
+Examples: `line2_201_City_Hall.webp`, `line2_222_Gangnam.webp`, `line2_240_Sinchon.webp`
+
 
 ## Architecture
 
-See `CLAUDE.md` for the root-level architecture overview and `FlashCards/CLAUDE.md` for the detailed flashcard module architecture, including the IndexedDB schema, service layer API, and startup flow.
+### IndexedDB schema
+
+The database is named `flashcard_app_db` (version 1) and contains three object stores:
+
+| Store | Key path | Contents |
+|---|---|---|
+| `flashcards` | `WordID` (integer) | Vocabulary records seeded from `public/brand/flashcards.json` on first run. Read-only after seeding. |
+| `user_progress` | `WordID` (integer) | Per-card progress state (`WordCompleted`, `WordSeenQty`, `PersonalNote`, visit counts, game scores). Created on first user interaction; a missing record means the card is unseen. |
+| `user_state` | `key` (string) | Key/value store for application state: active filters, route-mode position, word-game state, and theme preference. |
+
+### Service layer API
+
+All data access flows through a layered stack. UI code must not call IndexedDB directly.
+
+```
+UI / HTML
+  └── services/
+        ├── flashcard_service.js   — getFilteredFlashcards(filters), getRouteBatch(routeName, startWordID),
+        │                            getRouteNames(), getWordGameCards(metro), getAllWordGameCards()
+        ├── progress_service.js    — getProgress(wordId), updateProgress(wordId, fields)
+        └── filter_service.js      — getFilters(), saveFilters(), getRouteMode(), saveRouteMode(),
+                                     getWordGame(), saveWordGame()
+  └── repositories/
+        ├── flashcard_repository.js  — getAllFlashcards(), getFlashcardById(id)
+        ├── progress_repository.js   — getProgress(id), upsertProgress(id, data), getAllProgress()
+        └── state_repository.js      — getState(key), setState(key, value)
+  └── db/
+        ├── indexeddb_adapter.js     — openDB(), get(), getAll(), put(), bulkPut(), clear()
+        └── db_init.js               — initDatabase(), seedFlashcardsIfEmpty(), reImportFlashcards()
+```
+
+### Startup flow
+
+1. `bootstrap()` (`FlashCards/init/app_bootstrap.js`) is imported by every page entry point.
+2. `initDatabase()` opens the IndexedDB connection (cached module-level after the first call).
+3. `seedFlashcardsIfEmpty()` fetches `public/brand/flashcards.json` and bulk-inserts all records in a single transaction. Subsequent calls return immediately when data already exists.
+4. The page fetches `poi_maps.json` (station-code → map filename), `station_codes.json` (station-code → lat/lng), and `pagestate.json` in parallel.
+5. Mode is determined from persisted state: Word Game → Route Mode → Normal Filter mode. The appropriate card batch is loaded and rendered into the carousel.
 
 ## License
 
